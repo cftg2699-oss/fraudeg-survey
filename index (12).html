@@ -1,0 +1,1120 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FraudEG — Estudio de Mercado Antifraude LATAM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a0f;
+  --surface:#12121a;
+  --surface2:#1a1a26;
+  --border:#2a2a3a;
+  --border-active:#6c5ce7;
+  --accent:#6c5ce7;
+  --accent-glow:rgba(108,92,231,.25);
+  --accent2:#00cec9;
+  --text:#e8e8f0;
+  --text-dim:#8888a0;
+  --text-muted:#55556a;
+  --danger:#ff6b6b;
+  --success:#00b894;
+  --warning:#fdcb6e;
+  --radius:12px;
+  --radius-sm:8px;
+  --font:'DM Sans',system-ui,sans-serif;
+  --mono:'Space Mono',monospace;
+}
+html{font-size:16px;scroll-behavior:smooth}
+body{
+  font-family:var(--font);
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+/* ─── BG GRID ─── */
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% -10%,rgba(108,92,231,.08),transparent),
+    radial-gradient(ellipse 60% 40% at 80% 90%,rgba(0,206,201,.06),transparent),
+    linear-gradient(rgba(255,255,255,.02) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.02) 1px,transparent 1px);
+  background-size:100% 100%,100% 100%,60px 60px,60px 60px;
+  pointer-events:none;
+}
+.app{position:relative;z-index:1;max-width:780px;margin:0 auto;padding:24px 20px 60px}
+
+/* ─── HEADER ─── */
+.header{text-align:center;margin-bottom:40px;padding-top:20px}
+.logo{
+  font-family:var(--mono);font-size:1.6rem;font-weight:700;letter-spacing:2px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  display:inline-block;margin-bottom:8px;
+}
+.logo span{font-weight:400;opacity:.7}
+.tagline{font-size:.85rem;color:var(--text-dim);letter-spacing:.5px}
+
+/* ─── PROGRESS ─── */
+.progress-wrap{margin-bottom:36px}
+.progress-bar-bg{
+  height:4px;background:var(--surface2);border-radius:99px;overflow:hidden;
+  position:relative;
+}
+.progress-bar-fill{
+  height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));
+  border-radius:99px;transition:width .5s cubic-bezier(.4,0,.2,1);
+  box-shadow:0 0 12px var(--accent-glow);
+}
+.progress-info{
+  display:flex;justify-content:space-between;align-items:center;
+  margin-top:10px;font-size:.78rem;color:var(--text-muted);
+  font-family:var(--mono);
+}
+.progress-info .step-label{color:var(--accent);font-weight:700}
+
+/* ─── STEP CARDS ─── */
+.step{
+  display:none;
+  animation:fadeUp .4s ease both;
+}
+.step.active{display:block}
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(20px)}
+  to{opacity:1;transform:translateY(0)}
+}
+.step-card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:32px 28px;
+  position:relative;
+  overflow:hidden;
+}
+.step-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--accent),var(--accent2),transparent);
+}
+.q-number{
+  font-family:var(--mono);font-size:.7rem;letter-spacing:2px;
+  color:var(--accent);text-transform:uppercase;margin-bottom:6px;
+  display:flex;align-items:center;gap:8px;
+}
+.q-number .badge{
+  font-size:.6rem;padding:2px 8px;border-radius:99px;
+  background:rgba(108,92,231,.15);border:1px solid rgba(108,92,231,.3);
+}
+.q-number .badge.optional{
+  background:rgba(253,203,110,.1);border-color:rgba(253,203,110,.3);color:var(--warning);
+}
+.q-title{
+  font-size:1.15rem;font-weight:600;line-height:1.5;
+  margin-bottom:20px;color:var(--text);
+}
+.q-hint{
+  font-size:.78rem;color:var(--text-muted);margin-bottom:16px;
+  font-style:italic;
+}
+
+/* ─── OPTION BUTTONS (single select) ─── */
+.options-single{display:flex;flex-direction:column;gap:10px}
+.opt-btn{
+  display:flex;align-items:flex-start;gap:12px;
+  padding:14px 16px;
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:var(--radius-sm);
+  cursor:pointer;
+  transition:all .2s;
+  text-align:left;
+  font-size:.88rem;line-height:1.5;color:var(--text);
+  position:relative;
+}
+.opt-btn:hover{border-color:var(--accent);background:rgba(108,92,231,.06)}
+.opt-btn.selected{
+  border-color:var(--accent);
+  background:rgba(108,92,231,.1);
+  box-shadow:0 0 0 1px var(--accent),0 4px 16px var(--accent-glow);
+}
+.opt-radio{
+  width:18px;height:18px;min-width:18px;border-radius:50%;
+  border:2px solid var(--border);margin-top:2px;
+  transition:all .2s;position:relative;
+}
+.opt-btn.selected .opt-radio{
+  border-color:var(--accent);
+  background:var(--accent);
+  box-shadow:inset 0 0 0 3px var(--surface2);
+}
+
+/* ─── CHECKBOXES (multi select) ─── */
+.options-multi{display:flex;flex-direction:column;gap:8px}
+.opt-check{
+  display:flex;align-items:flex-start;gap:12px;
+  padding:12px 14px;
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:var(--radius-sm);
+  cursor:pointer;transition:all .2s;
+  font-size:.85rem;line-height:1.4;color:var(--text);
+}
+.opt-check:hover{border-color:var(--accent);background:rgba(108,92,231,.04)}
+.opt-check.selected{
+  border-color:var(--accent);background:rgba(108,92,231,.08);
+}
+.opt-checkbox{
+  width:18px;height:18px;min-width:18px;border-radius:4px;
+  border:2px solid var(--border);margin-top:1px;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .2s;font-size:11px;
+}
+.opt-check.selected .opt-checkbox{
+  border-color:var(--accent);background:var(--accent);color:#fff;
+}
+.opt-check.selected .opt-checkbox::after{content:'✓'}
+.max-hint{
+  font-size:.72rem;color:var(--warning);margin-top:8px;
+  font-family:var(--mono);
+}
+.max-reached .opt-check:not(.selected){opacity:.4;pointer-events:none}
+
+/* ─── TEXT INPUTS ─── */
+.field-group{margin-bottom:16px}
+.field-label{
+  display:block;font-size:.78rem;color:var(--text-dim);
+  margin-bottom:6px;font-weight:500;
+}
+.field-label .req{color:var(--danger)}
+input[type="text"],input[type="email"],input[type="tel"],textarea{
+  width:100%;padding:12px 14px;
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:var(--radius-sm);color:var(--text);
+  font-family:var(--font);font-size:.88rem;
+  transition:border-color .2s;outline:none;
+}
+input:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-glow)}
+textarea{resize:vertical;min-height:80px}
+input::placeholder,textarea::placeholder{color:var(--text-muted)}
+
+/* ─── OPEN TEXT FIELD for "Otro" ─── */
+.open-field{
+  margin-top:10px;display:none;
+  animation:fadeUp .3s ease both;
+}
+.open-field.visible{display:block}
+
+/* ─── CONDITIONAL TEXTAREA ─── */
+.conditional-textarea{
+  margin-top:12px;display:none;
+  animation:fadeUp .3s ease both;
+}
+.conditional-textarea.visible{display:block}
+
+/* ─── BUTTONS ─── */
+.btn-row{
+  display:flex;gap:10px;margin-top:24px;justify-content:flex-end;
+  flex-wrap:wrap;
+}
+.btn{
+  padding:12px 28px;border-radius:var(--radius-sm);
+  font-family:var(--font);font-size:.88rem;font-weight:600;
+  cursor:pointer;transition:all .25s;border:none;
+  letter-spacing:.3px;
+}
+.btn-primary{
+  background:linear-gradient(135deg,var(--accent),#8b7cf7);
+  color:#fff;
+  box-shadow:0 4px 16px var(--accent-glow);
+}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 24px rgba(108,92,231,.4)}
+.btn-primary:disabled{opacity:.4;pointer-events:none;transform:none}
+.btn-ghost{
+  background:transparent;color:var(--text-dim);
+  border:1px solid var(--border);
+}
+.btn-ghost:hover{border-color:var(--text-dim);color:var(--text)}
+.btn-skip{
+  background:transparent;color:var(--text-muted);
+  border:1px dashed var(--border);font-size:.82rem;
+}
+.btn-skip:hover{border-color:var(--text-dim);color:var(--text-dim)}
+
+/* ─── CONTACT FORM ─── */
+.contact-grid{display:grid;gap:14px}
+
+/* ─── THANK YOU ─── */
+.thank-you{text-align:center;padding:60px 20px}
+.thank-you .icon{font-size:3rem;margin-bottom:16px}
+.thank-you h2{
+  font-size:1.5rem;font-weight:700;margin-bottom:10px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.thank-you p{color:var(--text-dim);line-height:1.6;max-width:440px;margin:0 auto}
+
+/* ─── VALIDATION ─── */
+.error-msg{
+  font-size:.75rem;color:var(--danger);margin-top:6px;
+  display:none;font-family:var(--mono);
+}
+.error-msg.visible{display:block}
+.field-error input,.field-error textarea{border-color:var(--danger)!important}
+
+/* ─── TOAST ─── */
+.toast{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);
+  background:var(--danger);color:#fff;padding:12px 24px;
+  border-radius:var(--radius-sm);font-size:.85rem;font-weight:500;
+  opacity:0;transition:all .3s;z-index:999;pointer-events:none;
+  box-shadow:0 8px 24px rgba(255,107,107,.3);
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ─── SENDING OVERLAY ─── */
+.sending-overlay{
+  position:fixed;inset:0;background:rgba(10,10,15,.85);
+  display:none;align-items:center;justify-content:center;
+  z-index:1000;backdrop-filter:blur(4px);
+}
+.sending-overlay.visible{display:flex}
+.sending-box{text-align:center}
+.spinner{
+  width:40px;height:40px;border:3px solid var(--border);
+  border-top-color:var(--accent);border-radius:50%;
+  animation:spin .8s linear infinite;margin:0 auto 16px;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.sending-box p{color:var(--text-dim);font-size:.9rem}
+
+/* ─── RESPONSIVE ─── */
+@media(max-width:600px){
+  .app{padding:16px 14px 40px}
+  .step-card{padding:24px 18px}
+  .q-title{font-size:1.05rem}
+  .btn-row{flex-direction:column}
+  .btn{width:100%;text-align:center}
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="header">
+    <div class="logo">FRAUD<span>EG</span></div>
+    <div class="tagline">Estudio de Mercado Antifraude · LATAM 2026</div>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" id="progressFill" style="width:0%"></div>
+    </div>
+    <div class="progress-info">
+      <span>Pregunta <span class="step-label" id="stepCurrent">1</span> de <span id="stepTotal">12</span></span>
+      <span id="progressPct">0%</span>
+    </div>
+  </div>
+
+  <div id="formContainer">
+    <!-- Steps are rendered by JS -->
+  </div>
+
+  <div class="toast" id="toast"></div>
+</div>
+
+<div class="sending-overlay" id="sendingOverlay">
+  <div class="sending-box">
+    <div class="spinner"></div>
+    <p>Enviando respuestas…</p>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════
+// FraudEG Survey — Full Configuration
+// ════════════════════════════════════════
+
+const APPS_SCRIPT_URL = 'YOUR_APPS_SCRIPT_URL_HERE'; // ← Replace with your deployed Apps Script URL
+
+// ── QUESTION DATA ──
+const Q_UNIVERSAL_START = [
+  {
+    id:'Q01', title:'¿Cuál describe mejor tu rol?',
+    type:'single', required:true, max:1,
+    options:[
+      'Director / VP de Fraude o Riesgos',
+      'Gerente de Prevención de Fraude',
+      'Gerente de Control Interno / Auditoría',
+      'CRO / CISO / C-Level',
+      'Analista o Especialista Antifraude',
+      'Otro'
+    ],
+    hasOtherField: true, autoAdvance: true
+  },
+  {
+    id:'Q02', title:'¿En qué sector opera tu organización?',
+    type:'single', required:true, max:1,
+    options:[
+      'Banca / Financiero',
+      'Fintech / Gateway / Pagos digitales',
+      'E-commerce CNP (Tarjeta no Presente)',
+      'Retail físico / Omnicanal (POS + Canal Digital)',
+      'Marketplace',
+      'Otro'
+    ],
+    hasOtherField: true, autoAdvance: true,
+    sectorMap: {
+      0:'fintech', 1:'fintech',
+      2:'retail', 3:'retail',
+      4:'marketplace', 5:'otro'
+    }
+  }
+];
+
+const Q_RETAIL = [
+  {
+    id:'Q03', title:'¿Cuál es el mayor problema de fraude que enfrenta tu operación de Retail hoy?',
+    type:'multi', required:true, max:3,
+    options:[
+      'Fraude en devoluciones — productos usados, sin etiquetas, falsos o no comprados',
+      'Fraude con tarjeta presente — clonación, skimming en POS o terminales alteradas',
+      'Robo con tarjeta robada en tienda física',
+      'Fraude en programas de lealtad — puntos fraudulentos o canjeados sin autorización',
+      'Fraude interno — empleados manipulan descuentos, devoluciones o inventario',
+      'Shrinkage organizado — grupos coordinados de robo en tienda',
+      'Fraude en cupones y promociones — uso de cupones falsos o duplicados',
+      'Fraude en pagos alternativos — QR, wallets, BNPL',
+      'Chargebacks por canal digital — disputas del canal online',
+      'Falta de visibilidad unificada — no cruzamos señales entre canal físico y digital',
+      'Fraude con tarjetas robadas (CNP) — transacciones no autorizadas',
+      'Friendly fraud — cliente recibe producto y disputa de mala fe',
+      'Abuso de devoluciones y reembolsos — retornan productos usados o falsos',
+      'Fraude en cuenta de comprador — ATO, uso de cuentas de otros',
+      'Bots y scalping — compras automatizadas para reventa',
+      'Fraude en marketplace — vendedores fraudulentos dentro de la plataforma',
+      'Falsos positivos — bloqueamos ventas legítimas y perdemos conversión',
+      'Fraude transfronterizo — operaciones internacionales de alto riesgo'
+    ]
+  },
+  {
+    id:'Q04', title:'¿En qué áreas de tu operación el fraude genera mayor impacto hoy?',
+    type:'multi', required:true, max:3,
+    options:[
+      'Cajas y punto de venta — fraude en la transacción presencial',
+      'Área de devoluciones y servicio al cliente',
+      'Programas de lealtad y beneficios — puntos, cashback, cupones',
+      'Canal digital / e-commerce propio — chargebacks y fraude CNP',
+      'Operaciones de almacén y logística — fraude en recepción y despacho',
+      'El impacto está distribuido en todas las áreas',
+      'Estamos en programa de monitoreo de Visa o Mastercard por tasa de chargebacks',
+      'Perdemos ventas legítimas por bloquear demasiado',
+      'El fraude crece más rápido que nuestra capacidad de detectar manualmente',
+      'No tenemos visibilidad en tiempo real — sabemos del fraude días después',
+      'El costo de la operación antifraude es demasiado alto',
+      'Las temporadas altas (Hot Sale, Navidad) nos desbordan'
+    ]
+  },
+  {
+    id:'Q05', title:'¿Qué herramientas o proveedores usan para prevención de fraude en retail?',
+    type:'multi', required:false, max:99,
+    options:[
+      'Kount / Equifax','Sift Science','ClearSale','Signifyd','Forter','Riskified',
+      'LexisNexis Risk Solutions','Visa Advanced Authorization / CyberSource',
+      'Mastercard Decision Intelligence','Stripe Radar',
+      'Solución del procesador de pagos (Getnet, Fiserv, EVERTEC, etc.)',
+      'Sistema de gestión de devoluciones con reglas internas',
+      'Cámaras y analítica de video (para robo en tienda)',
+      'Loss Prevention interno — equipo humano sin herramienta formal',
+      'ERP con módulo de control de inventario (SAP, Oracle Retail, etc.)',
+      'Herramienta propia / motor de reglas interno',
+      'Sin herramienta formal de fraude',
+      'Otro'
+    ],
+    hasOtherField: true
+  },
+  {
+    id:'Q06', title:'¿Qué capacidad antifraude necesitas y no tienes en tu operación de retail?',
+    type:'multi', required:true, max:3,
+    options:[
+      'Política automatizada de devoluciones — decisión inteligente por cliente e historial',
+      'Detección de fraude en programas de lealtad',
+      'Visión unificada omnicanal — cruzar comportamiento entre tienda física y canal digital',
+      'Alertas en tiempo real en POS — detectar transacciones sospechosas antes de aprobarlas',
+      'Identificación de redes de fraude organizado',
+      'Integración con plataforma de pagos y ERP sin proyecto de TI complejo',
+      'Protección para pagos alternativos (QR, wallets, BNPL)',
+      'Reducir chargebacks del canal digital por debajo del umbral de las redes de pago',
+      'Dashboard para operaciones y pérdidas con métricas de fraude por tienda',
+      'Solución costo-eficiente — el margen en retail es bajo',
+      'Decisión en tiempo real en menos de 300ms sin friccionar la compra',
+      'Modelo que distinga friendly fraud de fraude real automáticamente',
+      'Cobertura para temporadas de alto volumen sin degradar velocidad',
+      'Protección para nuevos canales: app móvil, social commerce, pagos por voz',
+      'Análisis de comportamiento del comprador — detección de bots y scripts',
+      'Integración nativa con plataforma de procesamiento de pagos',
+      'Dashboard con métricas de fraude, aprobación y chargeback',
+      'Solución costo-eficiente — pago por transacción aprobada, no por volumen total',
+      'Cobertura para mercados B2B y marketplace dentro de la plataforma'
+    ]
+  }
+];
+
+const Q_FINTECH = [
+  {
+    id:'Q03', title:'¿Cuál es el mayor dolor que enfrenta tu equipo de fraude hoy?',
+    type:'multi', required:true, max:3,
+    options:[
+      'Fraude en canales digitales (banca móvil / web): ATO, SIM swap, malware',
+      'Detección tardía — el fraude ya se consumó y el dinero salió',
+      'Saturación de alertas — el equipo no da abasto con revisión manual',
+      'Falsos positivos en transacciones — bloqueamos clientes legítimos',
+      'Identidad sintética — abrimos cuentas a personas que no existen',
+      'Ingeniería social / scams — el cliente autoriza la transferencia engañado',
+      'Fraude en pagos instantáneos — difícil de revertir',
+      'Dependencia de TI — tardamos en ajustar reglas y modelos',
+      'Falta de visibilidad ejecutiva — métricas poco claras',
+      'Fraude interno — empleados con acceso privilegiado',
+      'Fraude en onboarding — identidades falsas o robadas',
+      'Account Takeover (ATO) — compromiso de cuentas reales',
+      'Fraude en pagos P2P — transacciones fraudulentas entre usuarios',
+      'Abuso de promociones y referidos — explotación de incentivos',
+      'Chargebacks elevados — disputas y pérdidas',
+      'Bots y cuentas múltiples — creación masiva automatizada',
+      'Fraude en KYC — documentos falsos o alterados',
+      'Velocidad de escalamiento — el fraude evoluciona más rápido que la respuesta',
+      'Limitaciones de compliance/regulación',
+      'Falsos positivos en onboarding — fricción y pérdida de clientes',
+      'Card testing / BIN attacks — pruebas masivas de tarjetas robadas',
+      'Fraude CNP (tarjeta no presente) — pasarelas',
+      'Merchant fraud — comercios para lavar dinero o auto-procesar',
+      'Mule accounts — cuentas intermediarias para mover dinero fraudulento',
+      'Friendly fraud — clientes desconocen compras',
+      'Abuso de cuentas múltiples para incentivos — farming de cuentas'
+    ]
+  },
+  {
+    id:'Q04', title:'¿Qué tipo de fraude genera mayor impacto en tu institución hoy?',
+    type:'single', required:true, max:1,
+    options:[
+      'Account Takeover (ATO) — robo y uso de credenciales',
+      'Fraude en onboarding / registro — identidades falsas o sintéticas',
+      'Fraude en pagos / transferencias — no autorizadas o bajo engaño',
+      'Fraude en tarjetas — CNP, card testing y clonación',
+      'Fraude en crédito / BNPL — documentación falsa',
+      'Lavado de dinero / cuentas mula',
+      'Activación / primeras transacciones — prueba de tarjetas robadas',
+      'Uso recurrente comprometido — cuenta legítima comprometida',
+      'Retiro o cashout — el fraude se materializa al transferir fondos',
+      'Disputas y reversiones — chargebacks post-transacción',
+      'Abuso de promociones o incentivos',
+      'Fraude interno — empleados o terceros con acceso privilegiado',
+      'Ingeniería social / scams — cliente engañado autoriza la operación',
+      'Fraude distribuido en múltiples etapas — sin patrón claro'
+    ]
+  },
+  {
+    id:'Q05', title:'¿Qué soluciones antifraude usan actualmente?',
+    type:'multi', required:false, max:99,
+    options:[
+      'FICO Falcon Fraud Manager','SAS Fraud Management','NICE Actimize','Sentinel',
+      'Oracle Financial Crime / OFSAA','ACI Fraud Management',
+      'BioCatch (biométrica conductual)','Monitor Plus',
+      'LexisNexis ThreatMetrix / TruValidate','Experian CrossCore / Hunter',
+      'Equifax / Kount','Feedzai','FeatureSpace (ARIC)',
+      'Visa Advanced Authorization / DPS','Mastercard Decision Intelligence / Ethoca',
+      'iuvity / iuviPROFILER','Provenir','BAE Systems NetReveal',
+      'Temenos Financial Crime Mitigation','Fiserv CardGuard / Fraud Risk Manager',
+      'Desarrollo propio / In-house','Motor de reglas básico / sin solución formal',
+      'Otro'
+    ],
+    hasOtherField: true
+  },
+  {
+    id:'Q06', title:'¿Qué capacidad no tienes hoy y más necesitas para tu programa antifraude?',
+    type:'multi', required:true, max:3,
+    options:[
+      'Account Takeover (ATO) — detección y prevención de robo de credenciales',
+      'Fraude en onboarding / registro — identidades falsas o sintéticas',
+      'Fraude en pagos / transferencias — no autorizadas o bajo engaño',
+      'Fraude en tarjetas — CNP, card testing y clonación',
+      'Fraude en crédito / BNPL — documentación falsa o alterada',
+      'Lavado de dinero / cuentas mula — mover fondos ilícitos',
+      'Activación / primeras transacciones — prueba de tarjetas robadas',
+      'Uso recurrente comprometido — cuenta legítima comprometida',
+      'Retiro o cashout — materialización del fraude al transferir',
+      'Disputas y reversiones — chargebacks y reclamaciones',
+      'Abuso de promociones o incentivos',
+      'Fraude interno — empleados o terceros con acceso privilegiado',
+      'Ingeniería social / scams — cliente engañado autoriza operación',
+      'Fraude distribuido en múltiples etapas — sin patrón claro'
+    ]
+  }
+];
+
+const Q_MARKETPLACE = [
+  {
+    id:'Q03', title:'¿Cuál es el mayor problema de fraude que enfrenta tu Marketplace?',
+    type:'multi', required:true, max:3,
+    options:[
+      'Vendedores fraudulentos — crean tiendas falsas o no entregan productos',
+      'Compradores fraudulentos — reclamos falsos, "no recibido" o abuso de protección',
+      'Abuso de devoluciones — reembolsos sin devolución real',
+      'Productos falsificados o prohibidos',
+      'Abuso de promociones y cupones — explotación masiva de descuentos',
+      'Cuentas múltiples / bots — creación masiva para abusar del sistema',
+      'Manipulación de reputación — reseñas falsas o transacciones simuladas',
+      'Fraude en pagos — uso de tarjetas robadas',
+      'Chargebacks y disputas post-venta',
+      'Fraude logístico — manipulación de envíos o tracking',
+      'Phishing o fraude dentro del chat — engaño para pagar fuera de la plataforma',
+      'Desvío fuera de la plataforma — evitan comisiones',
+      'Lavado de dinero — transacciones ficticias',
+      'Fraude interno — empleados o moderadores manipulan decisiones',
+      'Fraude distribuido — múltiples abusos pequeños sin patrón claro'
+    ]
+  },
+  {
+    id:'Q04', title:'¿Cuál es el mayor obstáculo para mejorar la detección de fraude?',
+    type:'single', required:true, max:1,
+    options:[
+      'Falta de datos integrados — información fragmentada entre pagos, usuarios y logística',
+      'Demasiados falsos positivos — bloqueamos usuarios legítimos',
+      'Detección tardía — el fraude se identifica cuando ya ocurrió',
+      'Limitaciones tecnológicas — reglas simples que no detectan fraude sofisticado',
+      'Falta de recursos humanos — equipo pequeño para el volumen',
+      'Dependencia de TI — cambios en reglas tardan demasiado',
+      'Falta de visibilidad del fraude — no contamos con métricas claras',
+      'Abuso distribuido — muchos fraudes pequeños difíciles de detectar',
+      'Falta de datos externos — no tenemos señales del ecosistema',
+      'Dificultad para vincular cuentas — no identificamos actores con múltiples perfiles',
+      'Fricción vs crecimiento — seguridad reduce conversión o onboarding',
+      'Integraciones complejas — herramientas difíciles de implementar',
+      'Limitaciones presupuestarias — soluciones antifraude costosas',
+      'Falta de automatización — demasiada revisión manual',
+      'Cambios constantes en patrones de fraude — modelos se vuelven obsoletos'
+    ]
+  },
+  {
+    id:'Q05', title:'¿Qué herramientas o enfoques usan actualmente para control de fraude?',
+    type:'multi', required:false, max:99,
+    options:[
+      'Auditorías manuales periódicas (sin herramienta formal)',
+      'SAS Analytics / SAS Fraud','SAP GRC','Oracle GRC / Oracle Analytics',
+      'IBM OpenPages','Palantir Gotham','QLIK / Power BI para análisis de datos',
+      'ACL / Galvanize (Diligent)','IDEA Data Analysis',
+      'Herramienta propia desarrollada internamente',
+      'Contraloría / Sistema de control fiscal del país',
+      'Sin herramienta — solo procesos manuales',
+      'Otro'
+    ],
+    hasOtherField: true
+  },
+  {
+    id:'Q06', title:'¿Qué capacidad necesitas y no tienes para combatir el fraude en tu Marketplace?',
+    type:'multi', required:true, max:3,
+    options:[
+      'Detección de fraude en tiempo real antes de completar la transacción',
+      'Identificación de cuentas múltiples del mismo actor',
+      'Verificación robusta de vendedores en el onboarding',
+      'Detección automática de abuso de devoluciones y reembolsos',
+      'Prevención de manipulación de reseñas y reputación',
+      'Detección de bots y automatización maliciosa',
+      'Scoring de riesgo unificado por usuario (buyer + seller)',
+      'Visión 360° del usuario cruzando pagos, comportamiento y logística',
+      'Reducción de falsos positivos sin afectar la conversión',
+      'Detección de fraude en pagos con tarjetas robadas',
+      'Identificación de colusión entre comprador y vendedor',
+      'Monitoreo de fraude logístico (tracking, envíos, entregas)',
+      'Automatización de decisiones sin revisión manual',
+      'Alertas tempranas de creación masiva de cuentas o tiendas',
+      'Dashboards con métricas claras del fraude y su impacto'
+    ]
+  }
+];
+
+// Q07 & Q08 — shared across all sectors
+const Q_SHARED_MID = [
+  {
+    id:'Q07', title:'¿Si pudiera mejorar una sola cosa en su sistema Antifraude?',
+    type:'multi', required:true, max:3,
+    options:[
+      'Verificación automática de vendedores al registrarse (sin fricción)',
+      'Detección de compradores abusivos antes de que escalen disputas',
+      'Scoring de riesgo unificado por usuario (buyer + seller en uno)',
+      'Protección del pago hasta confirmar entrega (escrow / custodia)',
+      'Detección de cuentas múltiples y bots automáticamente',
+      'Reducción de fraude en pagos sin afectar la conversión',
+      'Dashboard con métricas claras del fraude y su impacto financiero',
+      'Otra'
+    ],
+    hasOtherField: true
+  },
+  {
+    id:'Q08', title:'¿Cómo sería su solución ideal?',
+    type:'textarea', required:false,
+    placeholder:'Escriba cómo sería para usted una solución ideal e integral…'
+  }
+];
+
+const Q_UNIVERSAL_END = [
+  {
+    id:'Q09', title:'¿Qué tan satisfecho estás con tu solución actual?',
+    type:'single', required:true, max:1, autoAdvance:true,
+    options:[
+      'Muy satisfecho — cubre casi todo lo que necesitamos',
+      'Satisfecho, pero hay brechas importantes',
+      'Regular — funciona pero deja mucho que desear',
+      'Insatisfecho — buscamos activamente alternativas',
+      'No tenemos solución formal todavía'
+    ]
+  },
+  {
+    id:'Q10', title:'¿Considerarías cambiar tu proveedor actual?',
+    type:'single', required:true, max:1,
+    options:[
+      'Sí — estamos evaluando opciones activamente',
+      'Tal vez — dependería de qué ofrece la alternativa',
+      'No — estamos comprometidos con el proveedor actual'
+    ],
+    conditionalTextarea: 1, // show textarea when option index 1 is selected
+    conditionalPlaceholder: '¿Qué necesitarías ver en una alternativa para considerarla?'
+  },
+  {
+    id:'Q11', title:'¿Existe presupuesto disponible para una nueva solución antifraude este año?',
+    type:'single', required:false, max:1, autoAdvance:true,
+    options:[
+      'Sí, tenemos presupuesto asignado',
+      'Podría justificarse si el ROI es claro',
+      'No hay presupuesto disponible este año',
+      'Prefiero no responder esto'
+    ],
+    conditionalBudgetField: 0 // show budget field when option 0 selected
+  },
+  {
+    id:'Q12', title:'¿A dónde enviamos el resumen del estudio cuando esté listo?',
+    type:'contact', required:true
+  }
+];
+
+// ── STATE ──
+let currentStep = 0;
+let answers = {};
+let currentFlow = [];
+let selectedSector = null;
+
+function buildFlow(sector) {
+  selectedSector = sector;
+  let sectorQs;
+  switch(sector) {
+    case 'fintech': sectorQs = Q_FINTECH; break;
+    case 'retail': sectorQs = Q_RETAIL; break;
+    case 'marketplace': sectorQs = Q_MARKETPLACE; break;
+    default: sectorQs = []; break;
+  }
+  currentFlow = [...Q_UNIVERSAL_START, ...sectorQs, ...Q_SHARED_MID, ...Q_UNIVERSAL_END];
+}
+
+// Initialize with default flow — will rebuild after Q02
+buildFlow('retail');
+
+// ── RENDERING ──
+function renderStep(idx) {
+  const q = currentFlow[idx];
+  const container = document.getElementById('formContainer');
+
+  let html = `<div class="step active" id="step-${idx}"><div class="step-card">`;
+  
+  // Header
+  const badgeType = q.required ? '' : 'optional';
+  const badgeText = q.required ? 'Obligatoria' : 'Opcional';
+  html += `<div class="q-number">${q.id} <span class="badge ${badgeType}">${badgeText}</span></div>`;
+  html += `<div class="q-title">${q.title}</div>`;
+
+  if (q.type === 'single') {
+    if (q.max > 1) html += `<div class="q-hint">Selecciona una opción</div>`;
+    html += `<div class="options-single" id="opts-${idx}">`;
+    q.options.forEach((opt, i) => {
+      html += `<div class="opt-btn" data-idx="${i}" onclick="selectSingle(${idx},${i})">
+        <div class="opt-radio"></div><div>${opt}</div>
+      </div>`;
+    });
+    html += '</div>';
+    if (q.hasOtherField) {
+      html += `<div class="open-field" id="other-${idx}">
+        <input type="text" placeholder="Especifica tu respuesta…" id="otherInput-${idx}">
+      </div>`;
+    }
+    if (q.conditionalTextarea !== undefined) {
+      html += `<div class="conditional-textarea" id="condText-${idx}">
+        <textarea placeholder="${q.conditionalPlaceholder||'Especifica…'}" id="condTextInput-${idx}"></textarea>
+      </div>`;
+    }
+    if (q.conditionalBudgetField !== undefined) {
+      html += `<div class="conditional-textarea" id="budgetField-${idx}">
+        <div class="field-group">
+          <label class="field-label">Valor aproximado (USD)</label>
+          <input type="text" placeholder="Ej: 50,000" id="budgetInput-${idx}">
+        </div>
+      </div>`;
+    }
+  }
+  else if (q.type === 'multi') {
+    if (q.max < 99) html += `<div class="q-hint">Selecciona hasta ${q.max} opciones</div>`;
+    html += `<div class="options-multi" id="opts-${idx}">`;
+    q.options.forEach((opt, i) => {
+      html += `<div class="opt-check" data-idx="${i}" onclick="toggleMulti(${idx},${i})">
+        <div class="opt-checkbox"></div><div>${opt}</div>
+      </div>`;
+    });
+    html += '</div>';
+    if (q.max < 99) html += `<div class="max-hint" id="maxHint-${idx}">0 / ${q.max} seleccionadas</div>`;
+    if (q.hasOtherField) {
+      html += `<div class="open-field" id="other-${idx}">
+        <input type="text" placeholder="Especifica tu respuesta…" id="otherInput-${idx}">
+      </div>`;
+    }
+  }
+  else if (q.type === 'textarea') {
+    html += `<textarea placeholder="${q.placeholder||''}" id="textareaInput-${idx}" rows="4"></textarea>`;
+  }
+  else if (q.type === 'contact') {
+    html += `<div class="contact-grid">
+      <div class="field-group">
+        <label class="field-label">Nombre completo <span class="req">*</span></label>
+        <input type="text" id="c-name" placeholder="Tu nombre">
+        <div class="error-msg" id="err-name">Campo obligatorio</div>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Empresa / Organización</label>
+        <input type="text" id="c-company" placeholder="Nombre de la empresa">
+      </div>
+      <div class="field-group">
+        <label class="field-label">Correo electrónico <span class="req">*</span></label>
+        <input type="email" id="c-email" placeholder="correo@empresa.com">
+        <div class="error-msg" id="err-email">Ingresa un correo válido</div>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Teléfono <span class="req">*</span></label>
+        <input type="tel" id="c-phone" placeholder="+57 300 123 4567">
+        <div class="error-msg" id="err-phone">Ingresa un teléfono válido</div>
+      </div>
+      <div class="field-group">
+        <label class="field-label">País</label>
+        <input type="text" id="c-country" placeholder="País">
+      </div>
+    </div>`;
+  }
+
+  // Buttons
+  html += '<div class="btn-row">';
+  if (idx > 0) html += `<button class="btn btn-ghost" onclick="goBack()">← Atrás</button>`;
+  if (!q.required) html += `<button class="btn btn-skip" onclick="skipStep()">Saltar</button>`;
+  
+  if (q.type === 'contact') {
+    html += `<button class="btn btn-primary" onclick="submitForm()">Enviar ✓</button>`;
+  } else if (!q.autoAdvance) {
+    html += `<button class="btn btn-primary" id="nextBtn-${idx}" onclick="goNext()">Continuar →</button>`;
+  }
+  html += '</div>';
+
+  html += '</div></div>';
+  container.innerHTML = html;
+  updateProgress();
+}
+
+// ── SELECTION HANDLERS ──
+function selectSingle(stepIdx, optIdx) {
+  const q = currentFlow[stepIdx];
+  answers[q.id] = { value: q.options[optIdx], index: optIdx };
+
+  // Visual
+  document.querySelectorAll(`#opts-${stepIdx} .opt-btn`).forEach(el => el.classList.remove('selected'));
+  document.querySelector(`#opts-${stepIdx} .opt-btn[data-idx="${optIdx}"]`).classList.add('selected');
+
+  // "Otro" field
+  if (q.hasOtherField) {
+    const otherEl = document.getElementById(`other-${stepIdx}`);
+    const isOther = optIdx === q.options.length - 1;
+    otherEl.classList.toggle('visible', isOther);
+    if (isOther) document.getElementById(`otherInput-${stepIdx}`).focus();
+  }
+
+  // Conditional textarea (Q10)
+  if (q.conditionalTextarea !== undefined) {
+    const condEl = document.getElementById(`condText-${stepIdx}`);
+    condEl.classList.toggle('visible', optIdx === q.conditionalTextarea);
+    if (optIdx === q.conditionalTextarea) document.getElementById(`condTextInput-${stepIdx}`).focus();
+  }
+
+  // Budget field (Q11)
+  if (q.conditionalBudgetField !== undefined) {
+    const budgetEl = document.getElementById(`budgetField-${stepIdx}`);
+    budgetEl.classList.toggle('visible', optIdx === q.conditionalBudgetField);
+    if (optIdx === q.conditionalBudgetField) document.getElementById(`budgetInput-${stepIdx}`).focus();
+  }
+
+  // Auto-advance (with slight delay for UX)
+  if (q.autoAdvance && !(q.hasOtherField && optIdx === q.options.length - 1)) {
+    // Don't auto-advance if conditional fields need input
+    if (q.conditionalTextarea !== undefined && optIdx === q.conditionalTextarea) return;
+    if (q.conditionalBudgetField !== undefined && optIdx === q.conditionalBudgetField) return;
+    setTimeout(() => goNext(), 400);
+  }
+}
+
+function toggleMulti(stepIdx, optIdx) {
+  const q = currentFlow[stepIdx];
+  if (!answers[q.id]) answers[q.id] = { values: [], indices: [] };
+  const ans = answers[q.id];
+
+  const el = document.querySelector(`#opts-${stepIdx} .opt-check[data-idx="${optIdx}"]`);
+  const isSelected = el.classList.contains('selected');
+
+  if (isSelected) {
+    el.classList.remove('selected');
+    ans.indices = ans.indices.filter(i => i !== optIdx);
+    ans.values = ans.indices.map(i => q.options[i]);
+  } else {
+    if (q.max < 99 && ans.indices.length >= q.max) {
+      showToast(`Máximo ${q.max} opciones`);
+      return;
+    }
+    el.classList.add('selected');
+    ans.indices.push(optIdx);
+    ans.values = ans.indices.map(i => q.options[i]);
+  }
+
+  // Max hint
+  if (q.max < 99) {
+    const hintEl = document.getElementById(`maxHint-${stepIdx}`);
+    hintEl.textContent = `${ans.indices.length} / ${q.max} seleccionadas`;
+    const wrapper = document.getElementById(`opts-${stepIdx}`);
+    wrapper.classList.toggle('max-reached', ans.indices.length >= q.max);
+  }
+
+  // "Otro" field
+  if (q.hasOtherField) {
+    const otherIdx = q.options.length - 1;
+    const otherEl = document.getElementById(`other-${stepIdx}`);
+    otherEl.classList.toggle('visible', ans.indices.includes(otherIdx));
+  }
+}
+
+// ── NAVIGATION ──
+function goNext() {
+  const q = currentFlow[currentStep];
+
+  // Validation
+  if (q.required) {
+    if (q.type === 'single' && !answers[q.id]) {
+      showToast('Selecciona una opción para continuar');
+      return;
+    }
+    if (q.type === 'multi' && (!answers[q.id] || answers[q.id].indices.length === 0)) {
+      showToast('Selecciona al menos una opción');
+      return;
+    }
+  }
+
+  // Capture "Otro" text
+  if (q.hasOtherField && answers[q.id]) {
+    const otherInput = document.getElementById(`otherInput-${currentStep}`);
+    if (otherInput && otherInput.parentElement.classList.contains('visible')) {
+      answers[q.id].otherText = otherInput.value;
+    }
+  }
+
+  // Capture conditional textarea
+  if (q.conditionalTextarea !== undefined && answers[q.id]) {
+    const condInput = document.getElementById(`condTextInput-${currentStep}`);
+    if (condInput && condInput.parentElement.classList.contains('visible')) {
+      if (q.required && !condInput.value.trim()) {
+        showToast('Por favor completa el campo adicional');
+        return;
+      }
+      answers[q.id].conditionalText = condInput.value;
+    }
+  }
+
+  // Capture budget
+  if (q.conditionalBudgetField !== undefined && answers[q.id]) {
+    const budgetInput = document.getElementById(`budgetInput-${currentStep}`);
+    if (budgetInput && budgetInput.parentElement.classList.contains('visible')) {
+      answers[q.id].budgetValue = budgetInput.value;
+    }
+  }
+
+  // Capture textarea
+  if (q.type === 'textarea') {
+    const ta = document.getElementById(`textareaInput-${currentStep}`);
+    answers[q.id] = { value: ta.value };
+  }
+
+  // After Q02 — rebuild flow based on sector
+  if (q.id === 'Q02' && answers.Q02) {
+    const sectorKey = q.sectorMap[answers.Q02.index] || 'otro';
+    buildFlow(sectorKey);
+    currentStep = 2; // jump to Q03
+    renderStep(currentStep);
+    return;
+  }
+
+  currentStep++;
+  if (currentStep < currentFlow.length) {
+    renderStep(currentStep);
+  }
+}
+
+function goBack() {
+  if (currentStep > 0) {
+    // If we're at Q03 sector-specific, go back to Q02
+    if (currentStep === 2) {
+      currentStep = 1;
+    } else {
+      currentStep--;
+    }
+    renderStep(currentStep);
+  }
+}
+
+function skipStep() {
+  currentStep++;
+  if (currentStep < currentFlow.length) {
+    renderStep(currentStep);
+  }
+}
+
+// ── SUBMIT ──
+function submitForm() {
+  // Validate contact fields
+  const name = document.getElementById('c-name').value.trim();
+  const email = document.getElementById('c-email').value.trim();
+  const phone = document.getElementById('c-phone').value.trim();
+  const company = document.getElementById('c-company').value.trim();
+  const country = document.getElementById('c-country').value.trim();
+
+  let valid = true;
+
+  if (!name) {
+    document.getElementById('err-name').classList.add('visible');
+    document.getElementById('err-name').parentElement.classList.add('field-error');
+    valid = false;
+  } else {
+    document.getElementById('err-name').classList.remove('visible');
+    document.getElementById('err-name').parentElement.classList.remove('field-error');
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    document.getElementById('err-email').classList.add('visible');
+    document.getElementById('err-email').parentElement.classList.add('field-error');
+    valid = false;
+  } else {
+    document.getElementById('err-email').classList.remove('visible');
+    document.getElementById('err-email').parentElement.classList.remove('field-error');
+  }
+
+  if (!phone || phone.length < 7) {
+    document.getElementById('err-phone').classList.add('visible');
+    document.getElementById('err-phone').parentElement.classList.add('field-error');
+    valid = false;
+  } else {
+    document.getElementById('err-phone').classList.remove('visible');
+    document.getElementById('err-phone').parentElement.classList.remove('field-error');
+  }
+
+  if (!valid) {
+    showToast('Completa los campos obligatorios');
+    return;
+  }
+
+  answers.Q12 = { name, email, phone, company, country };
+
+  // Build payload
+  const payload = {
+    timestamp: new Date().toISOString(),
+    sector: selectedSector,
+    responses: {}
+  };
+
+  for (const [key, val] of Object.entries(answers)) {
+    if (val.values) {
+      // multi-select
+      let text = val.values.join(' | ');
+      if (val.otherText) text += ` | OTRO: ${val.otherText}`;
+      payload.responses[key] = text;
+    } else if (val.value !== undefined) {
+      let text = val.value;
+      if (val.otherText) text += ` (OTRO: ${val.otherText})`;
+      if (val.conditionalText) text += ` → ${val.conditionalText}`;
+      if (val.budgetValue) text += ` [Presupuesto: ${val.budgetValue}]`;
+      payload.responses[key] = text;
+    } else if (val.name) {
+      // contact
+      payload.responses[key] = `${val.name} | ${val.company} | ${val.email} | ${val.phone} | ${val.country}`;
+      payload.contact = val;
+    }
+  }
+
+  // Send to Apps Script
+  const overlay = document.getElementById('sendingOverlay');
+  overlay.classList.add('visible');
+
+  fetch(APPS_SCRIPT_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  })
+  .then(() => {
+    overlay.classList.remove('visible');
+    showThankYou();
+  })
+  .catch(err => {
+    overlay.classList.remove('visible');
+    // With no-cors, we can't read the response, but the request was sent
+    showThankYou();
+  });
+}
+
+function showThankYou() {
+  const container = document.getElementById('formContainer');
+  container.innerHTML = `
+    <div class="thank-you">
+      <div class="icon">✓</div>
+      <h2>¡Gracias por participar!</h2>
+      <p>Tu respuesta ha sido registrada. Cuando el estudio esté listo, recibirás el resumen en el correo que nos proporcionaste.</p>
+    </div>
+  `;
+  // Hide progress
+  document.querySelector('.progress-wrap').style.display = 'none';
+}
+
+// ── PROGRESS ──
+function updateProgress() {
+  const total = currentFlow.length;
+  const pct = Math.round(((currentStep) / total) * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('stepCurrent').textContent = currentStep + 1;
+  document.getElementById('stepTotal').textContent = total;
+  document.getElementById('progressPct').textContent = pct + '%';
+}
+
+// ── TOAST ──
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ── INIT ──
+renderStep(0);
+</script>
+</body>
+</html>
