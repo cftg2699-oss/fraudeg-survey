@@ -9,12 +9,11 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  /* Colores corporativos FraudEG */
   --bg: #0d1117;
   --surface: #161b22;
   --surface2: #21262d;
   --border: #30363d;
-  --accent: #84CC16; /* Verde lima FraudEG */
+  --accent: #84CC16;
   --accent-glow: rgba(132, 204, 22, 0.25);
   --accent2: #65a30d;
   --text: #f0f6fc;
@@ -28,356 +27,138 @@
   --font: 'DM Sans', system-ui, sans-serif;
   --mono: 'Space Mono', monospace;
 }
-/* Aumento de tamaño de fuente general */
 html{font-size:18px; scroll-behavior:smooth}
-body{
-  font-family:var(--font);
-  background:var(--bg);
-  color:var(--text);
-  min-height:100vh;
-  overflow-x:hidden;
-  -webkit-font-smoothing:antialiased;
-}
-/* ─── BG GRID ─── */
-body::before{
-  content:'';position:fixed;inset:0;z-index:0;
-  background:
-    radial-gradient(ellipse 80% 60% at 50% -10%,rgba(132,204,22,.05),transparent),
-    linear-gradient(rgba(255,255,255,.02) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(255,255,255,.02) 1px,transparent 1px);
-  background-size:100% 100%,60px 60px,60px 60px;
-  pointer-events:none;
-}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+body::before{content:'';position:fixed;inset:0;z-index:0;background:radial-gradient(ellipse 80% 60% at 50% -10%,rgba(132,204,22,.05),transparent),linear-gradient(rgba(255,255,255,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.02) 1px,transparent 1px);background-size:100% 100%,60px 60px,60px 60px;pointer-events:none}
 .app{position:relative;z-index:1;max-width:800px;margin:0 auto;padding:24px 20px 60px}
-
-/* ─── HEADER Y LOGO FRAUDEG ─── */
 .header{text-align:center;margin-bottom:40px;padding-top:20px}
-.logo{
-  font-family:var(--font);
-  font-size:3rem;
-  font-weight:700;
-  letter-spacing:-1px;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  margin-bottom:8px;
-}
-.logo .fraud{color:#ffffff;}
-.logo .eg{color:var(--accent);}
+.logo{font-family:var(--font);font-size:3rem;font-weight:700;letter-spacing:-1px;display:flex;justify-content:center;align-items:center;margin-bottom:8px}
+.logo .fraud{color:#ffffff}
+.logo .eg{color:var(--accent)}
 .tagline{font-size:.9rem;color:var(--text-dim);letter-spacing:.5px}
-
-/* ─── PROGRESS ─── */
 .progress-wrap{margin-bottom:36px}
-.progress-bar-bg{
-  height:4px;background:var(--surface2);border-radius:99px;overflow:hidden;
-  position:relative;
-}
-.progress-bar-fill{
-  height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));
-  border-radius:99px;transition:width .5s cubic-bezier(.4,0,.2,1);
-  box-shadow:0 0 12px var(--accent-glow);
-}
-.progress-info{
-  display:flex;justify-content:space-between;align-items:center;
-  margin-top:10px;font-size:.8rem;color:var(--text-muted);
-  font-family:var(--mono);
-}
+.progress-bar-bg{height:4px;background:var(--surface2);border-radius:99px;overflow:hidden}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));border-radius:99px;transition:width .5s cubic-bezier(.4,0,.2,1);box-shadow:0 0 12px var(--accent-glow)}
+.progress-info{display:flex;justify-content:space-between;align-items:center;margin-top:10px;font-size:.8rem;color:var(--text-muted);font-family:var(--mono)}
 .progress-info .step-label{color:var(--accent);font-weight:700}
-
-/* ─── STEP CARDS ─── */
-.step{
-  display:none;
-  animation:fadeUp .4s ease both;
-}
+.step{display:none;animation:fadeUp .4s ease both}
 .step.active{display:block}
-@keyframes fadeUp{
-  from{opacity:0;transform:translateY(20px)}
-  to{opacity:1;transform:translateY(0)}
-}
-.step-card{
-  background:var(--surface);
-  border:1px solid var(--border);
-  border-radius:var(--radius);
-  padding:40px 32px;
-  position:relative;
-  overflow:hidden;
-}
-.step-card::before{
-  content:'';position:absolute;top:0;left:0;right:0;height:2px;
-  background:linear-gradient(90deg,var(--accent),var(--accent2),transparent);
-}
-.q-number{
-  font-family:var(--mono);font-size:.75rem;letter-spacing:2px;
-  color:var(--accent);text-transform:uppercase;margin-bottom:8px;
-  display:flex;align-items:center;gap:8px;
-}
-.q-number .badge{
-  font-size:.65rem;padding:3px 10px;border-radius:99px;
-  background:rgba(132,204,22,.15);border:1px solid rgba(132,204,22,.3);
-  color:var(--accent);
-}
-.q-number .badge.optional{
-  background:rgba(210,153,34,.1);border-color:rgba(210,153,34,.3);color:var(--warning);
-}
-.q-title{
-  font-size:1.3rem;font-weight:600;line-height:1.4;
-  margin-bottom:24px;color:var(--text);
-}
-.q-hint{
-  font-size:.85rem;color:var(--text-muted);margin-bottom:16px;
-  font-style:italic;
-}
-
-/* ─── OPTION BUTTONS (single select) ─── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.step-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:40px 32px;position:relative;overflow:hidden}
+.step-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--accent2),transparent)}
+.q-number{font-family:var(--mono);font-size:.75rem;letter-spacing:2px;color:var(--accent);text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.q-number .badge{font-size:.65rem;padding:3px 10px;border-radius:99px;background:rgba(132,204,22,.15);border:1px solid rgba(132,204,22,.3);color:var(--accent)}
+.q-number .badge.optional{background:rgba(210,153,34,.1);border-color:rgba(210,153,34,.3);color:var(--warning)}
+.q-title{font-size:1.3rem;font-weight:600;line-height:1.4;margin-bottom:24px;color:var(--text)}
+.q-hint{font-size:.85rem;color:var(--text-muted);margin-bottom:16px;font-style:italic}
 .options-single{display:flex;flex-direction:column;gap:12px}
-.opt-btn{
-  display:flex;align-items:flex-start;gap:14px;
-  padding:16px 18px;
-  background:var(--surface2);
-  border:1px solid var(--border);
-  border-radius:var(--radius-sm);
-  cursor:pointer;
-  transition:all .2s;
-  text-align:left;
-  font-size:1rem;line-height:1.5;color:var(--text);
-}
+.opt-btn{display:flex;align-items:flex-start;gap:14px;padding:16px 18px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;transition:all .2s;text-align:left;font-size:1rem;line-height:1.5;color:var(--text)}
 .opt-btn:hover{border-color:var(--accent);background:rgba(132,204,22,.06)}
-.opt-btn.selected{
-  border-color:var(--accent);
-  background:rgba(132,204,22,.1);
-  box-shadow:0 0 0 1px var(--accent),0 4px 16px var(--accent-glow);
-}
-.opt-radio{
-  width:20px;height:20px;min-width:20px;border-radius:50%;
-  border:2px solid var(--border);margin-top:2px;
-  transition:all .2s;position:relative;
-}
-.opt-btn.selected .opt-radio{
-  border-color:var(--accent);
-  background:var(--accent);
-  box-shadow:inset 0 0 0 3px var(--surface2);
-}
-
-/* ─── CHECKBOXES (multi select) ─── */
+.opt-btn.selected{border-color:var(--accent);background:rgba(132,204,22,.1);box-shadow:0 0 0 1px var(--accent),0 4px 16px var(--accent-glow)}
+.opt-radio{width:20px;height:20px;min-width:20px;border-radius:50%;border:2px solid var(--border);margin-top:2px;transition:all .2s}
+.opt-btn.selected .opt-radio{border-color:var(--accent);background:var(--accent);box-shadow:inset 0 0 0 3px var(--surface2)}
 .options-multi{display:flex;flex-direction:column;gap:10px}
-.opt-check{
-  display:flex;align-items:flex-start;gap:14px;
-  padding:14px 16px;
-  background:var(--surface2);
-  border:1px solid var(--border);
-  border-radius:var(--radius-sm);
-  cursor:pointer;transition:all .2s;
-  font-size:.95rem;line-height:1.4;color:var(--text);
-}
+.opt-check{display:flex;align-items:flex-start;gap:14px;padding:14px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;transition:all .2s;font-size:.95rem;line-height:1.4;color:var(--text)}
 .opt-check:hover{border-color:var(--accent);background:rgba(132,204,22,.04)}
-.opt-check.selected{
-  border-color:var(--accent);background:rgba(132,204,22,.08);
-}
-.opt-checkbox{
-  width:20px;height:20px;min-width:20px;border-radius:4px;
-  border:2px solid var(--border);margin-top:1px;
-  display:flex;align-items:center;justify-content:center;
-  transition:all .2s;font-size:12px;
-}
-.opt-check.selected .opt-checkbox{
-  border-color:var(--accent);background:var(--accent);color:#000;
-}
-.opt-check.selected .opt-checkbox::after{content:'✓';font-weight:bold;}
-.max-hint{
-  font-size:.8rem;color:var(--warning);margin-top:10px;
-  font-family:var(--mono);
-}
+.opt-check.selected{border-color:var(--accent);background:rgba(132,204,22,.08)}
+.opt-checkbox{width:20px;height:20px;min-width:20px;border-radius:4px;border:2px solid var(--border);margin-top:1px;display:flex;align-items:center;justify-content:center;transition:all .2s;font-size:12px}
+.opt-check.selected .opt-checkbox{border-color:var(--accent);background:var(--accent);color:#000}
+.opt-check.selected .opt-checkbox::after{content:'✓';font-weight:bold}
+.max-hint{font-size:.8rem;color:var(--warning);margin-top:10px;font-family:var(--mono)}
 .max-reached .opt-check:not(.selected){opacity:.4;pointer-events:none}
-
-/* ─── TEXT INPUTS ─── */
 .field-group{margin-bottom:18px}
-.field-label{
-  display:block;font-size:.85rem;color:var(--text-dim);
-  margin-bottom:8px;font-weight:500;
-}
+.field-label{display:block;font-size:.85rem;color:var(--text-dim);margin-bottom:8px;font-weight:500}
 .field-label .req{color:var(--danger)}
-input[type="text"],input[type="email"],input[type="tel"],textarea{
-  width:100%;padding:14px 16px;
-  background:var(--surface2);border:1px solid var(--border);
-  border-radius:var(--radius-sm);color:var(--text);
-  font-family:var(--font);font-size:1rem;
-  transition:border-color .2s;outline:none;
-}
+input[type="text"],input[type="email"],input[type="tel"],textarea{width:100%;padding:14px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:var(--font);font-size:1rem;transition:border-color .2s;outline:none}
 input:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-glow)}
 textarea{resize:vertical;min-height:90px}
 input::placeholder,textarea::placeholder{color:var(--text-muted)}
-
-/* ─── OPEN TEXT FIELD for "Otro" ─── */
-.open-field{
-  margin-top:12px;display:none;
-  animation:fadeUp .3s ease both;
-}
+.open-field{margin-top:12px;display:none;animation:fadeUp .3s ease both}
 .open-field.visible{display:block}
-
-/* ─── CONDITIONAL TEXTAREA ─── */
-.conditional-textarea{
-  margin-top:14px;display:none;
-  animation:fadeUp .3s ease both;
-}
+.conditional-textarea{margin-top:14px;display:none;animation:fadeUp .3s ease both}
 .conditional-textarea.visible{display:block}
-
-/* ─── BUTTONS ─── */
-.btn-row{
-  display:flex;gap:12px;margin-top:30px;justify-content:flex-end;
-  flex-wrap:wrap;
-}
-.btn{
-  padding:14px 32px;border-radius:var(--radius-sm);
-  font-family:var(--font);font-size:1rem;font-weight:600;
-  cursor:pointer;transition:all .25s;border:none;
-  letter-spacing:.3px;
-}
-.btn-primary{
-  background:linear-gradient(135deg,var(--accent),var(--accent2));
-  color:#000; /* Texto oscuro para contrastar con el verde lima */
-  box-shadow:0 4px 16px var(--accent-glow);
-}
+.contact-form{margin-top:20px;display:none;animation:fadeUp .3s ease both}
+.contact-form.visible{display:block}
+.contact-form .header-label{font-size:.95rem;color:var(--text);margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border);font-weight:500}
+.btn-row{display:flex;gap:12px;margin-top:30px;justify-content:flex-end;flex-wrap:wrap}
+.btn{padding:14px 32px;border-radius:var(--radius-sm);font-family:var(--font);font-size:1rem;font-weight:600;cursor:pointer;transition:all .25s;border:none;letter-spacing:.3px}
+.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#000;box-shadow:0 4px 16px var(--accent-glow)}
 .btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 24px rgba(132,204,22,.4)}
 .btn-primary:disabled{opacity:.4;pointer-events:none;transform:none}
-.btn-ghost{
-  background:transparent;color:var(--text-dim);
-  border:1px solid var(--border);
-}
+.btn-ghost{background:transparent;color:var(--text-dim);border:1px solid var(--border)}
 .btn-ghost:hover{border-color:var(--text-dim);color:var(--text)}
-.btn-skip{
-  background:transparent;color:var(--text-muted);
-  border:1px dashed var(--border);font-size:.9rem;
-}
+.btn-skip{background:transparent;color:var(--text-muted);border:1px dashed var(--border);font-size:.9rem}
 .btn-skip:hover{border-color:var(--text-dim);color:var(--text-dim)}
-
-/* ─── CONTACT FORM ─── */
 .contact-grid{display:grid;gap:16px}
-
-/* ─── THANK YOU ─── */
 .thank-you{text-align:center;padding:60px 20px}
-.thank-you .icon{font-size:3.5rem;margin-bottom:20px; color:var(--accent);}
-.thank-you h2{
-  font-size:1.8rem;font-weight:700;margin-bottom:12px;
-  color:var(--text);
-}
-.thank-you p{color:var(--text-dim);line-height:1.6;max-width:480px;margin:0 auto; font-size:1rem;}
-
-/* ─── VALIDATION ─── */
-.error-msg{
-  font-size:.8rem;color:var(--danger);margin-top:8px;
-  display:none;font-family:var(--mono);
-}
+.thank-you .icon{font-size:3.5rem;margin-bottom:20px;color:var(--accent)}
+.thank-you h2{font-size:1.8rem;font-weight:700;margin-bottom:12px;color:var(--text)}
+.thank-you p{color:var(--text-dim);line-height:1.6;max-width:480px;margin:0 auto;font-size:1rem}
+.error-msg{font-size:.8rem;color:var(--danger);margin-top:8px;display:none;font-family:var(--mono)}
 .error-msg.visible{display:block}
 .field-error input,.field-error textarea{border-color:var(--danger)!important}
-
-/* ─── TOAST ─── */
-.toast{
-  position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);
-  background:var(--danger);color:#fff;padding:14px 28px;
-  border-radius:var(--radius-sm);font-size:.95rem;font-weight:500;
-  opacity:0;transition:all .3s;z-index:999;pointer-events:none;
-  box-shadow:0 8px 24px rgba(248,81,73,.3);
-}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--danger);color:#fff;padding:14px 28px;border-radius:var(--radius-sm);font-size:.95rem;font-weight:500;opacity:0;transition:all .3s;z-index:999;pointer-events:none;box-shadow:0 8px 24px rgba(248,81,73,.3)}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-
-/* ─── SENDING OVERLAY ─── */
-.sending-overlay{
-  position:fixed;inset:0;background:rgba(13,17,23,.85);
-  display:none;align-items:center;justify-content:center;
-  z-index:1000;backdrop-filter:blur(4px);
-}
+.sending-overlay{position:fixed;inset:0;background:rgba(13,17,23,.85);display:none;align-items:center;justify-content:center;z-index:1000;backdrop-filter:blur(4px)}
 .sending-overlay.visible{display:flex}
 .sending-box{text-align:center}
-.spinner{
-  width:44px;height:44px;border:3px solid var(--border);
-  border-top-color:var(--accent);border-radius:50%;
-  animation:spin .8s linear infinite;margin:0 auto 16px;
-}
+.spinner{width:44px;height:44px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px}
 @keyframes spin{to{transform:rotate(360deg)}}
 .sending-box p{color:var(--text-dim);font-size:1rem}
-
-/* ─── RESPONSIVE ─── */
-@media(max-width:600px){
-  .app{padding:16px 14px 40px}
-  .step-card{padding:28px 20px}
-  .q-title{font-size:1.15rem}
-  .btn-row{flex-direction:column}
-  .btn{width:100%;text-align:center}
-}
+@media(max-width:600px){.app{padding:16px 14px 40px}.step-card{padding:28px 20px}.q-title{font-size:1.15rem}.btn-row{flex-direction:column}.btn{width:100%;text-align:center}}
 </style>
 </head>
 <body>
 
 <div class="app">
   <div class="header">
-    <div class="logo">
-      <span class="fraud">Fraud</span><span class="eg">EG</span>
-    </div>
+    <div class="logo"><span class="fraud">Fraud</span><span class="eg">EG</span></div>
     <div class="tagline">Estudio de Mercado Antifraude · LATAM 2026</div>
   </div>
-
   <div class="progress-wrap">
-    <div class="progress-bar-bg">
-      <div class="progress-bar-fill" id="progressFill" style="width:0%"></div>
-    </div>
+    <div class="progress-bar-bg"><div class="progress-bar-fill" id="progressFill" style="width:0%"></div></div>
     <div class="progress-info">
-      <span>Pregunta <span class="step-label" id="stepCurrent">1</span> de <span id="stepTotal">12</span></span>
+      <span>Pregunta <span class="step-label" id="stepCurrent">1</span> de <span id="stepTotal">14</span></span>
       <span id="progressPct">0%</span>
     </div>
   </div>
-
-  <div id="formContainer">
-    </div>
-
+  <div id="formContainer"></div>
   <div class="toast" id="toast"></div>
 </div>
 
 <div class="sending-overlay" id="sendingOverlay">
-  <div class="sending-box">
-    <div class="spinner"></div>
-    <p>Enviando respuestas…</p>
-  </div>
+  <div class="sending-box"><div class="spinner"></div><p>Enviando respuestas…</p></div>
 </div>
 
 <script>
-// ════════════════════════════════════════
-// FraudEG Survey — Full Configuration
-// ════════════════════════════════════════
+// ════════════════════════════════════════════════════════════
+// FraudEG Survey V1.2 FINAL
+// Cambios vs V1.1:
+//  1. Q03 Retail limpiada (20→16 opts, duplicados eliminados)
+//  2. Q06 Fintech reescrita (capacidades operativas reales)
+//  3. Q07B NUEVA: pérdidas económicas USD
+//  4. Q07C NUEVA: riesgo compartido (validación indirecta EaaS)
+//  5. Q11 obligatoria
+//  6. MarketPlace header corregido
+//  7. Q12 reformulada: pregunta de intención de contacto
+// Total: 14 preguntas
+// ════════════════════════════════════════════════════════════
 
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzraWiELDN2ZH-HVDEaOPrYPtdxHLkOdxQ0CN0bmUt4YSBTLHs3_RGHvmJI-qP81aMrpQ/exec'; // ← Reemplaza con tu URL de Apps Script
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwqobD0id-qL5-ntNzbffR-gE9zOepbVFiags2PWYMl0SMzVzUnfd4q2vrRcKBwZUd-iQ/exec';
 
-// ── QUESTION DATA ──
 const Q_UNIVERSAL_START = [
   {
     id:'Q01', title:'¿Cuál describe mejor tu rol?',
-    type:'single', required:true, max:1,
-    options:[
-      'Director / VP de Fraude o Riesgos',
-      'Gerente de Prevención de Fraude',
-      'Gerente de Control Interno / Auditoría',
-      'CRO / CISO / C-Level',
-      'Analista o Especialista Antifraude',
-      'Otro'
-    ],
-    hasOtherField: true, autoAdvance: true
+    type:'single', required:true, max:1, autoAdvance:true,
+    options:['Director / VP de Fraude o Riesgos','Gerente de Prevención de Fraude','Gerente de Control Interno / Auditoría','CRO / CISO / C-Level','Analista o Especialista Antifraude','Otro'],
+    hasOtherField: true
   },
   {
     id:'Q02', title:'¿En qué sector opera tu organización?',
-    type:'single', required:true, max:1,
-    options:[
-      'Banca / Financiero',
-      'Fintech / Gateway / Pagos digitales',
-      'E-commerce CNP (Tarjeta no Presente)',
-      'Retail físico / Omnicanal (POS + Canal Digital)',
-      'Marketplace',
-      'Otro'
-    ],
-    hasOtherField: true, autoAdvance: true,
-    sectorMap: {
-      0:'fintech', 1:'fintech',
-      2:'retail', 3:'retail',
-      4:'marketplace', 5:'otro'
-    }
+    type:'single', required:true, max:1, autoAdvance:true,
+    options:['Banca / Financiero','Fintech / Gateway / Pagos digitales','E-commerce CNP (Tarjeta no Presente)','Retail físico / Omnicanal (POS + Canal Digital)','Marketplace','Otro'],
+    hasOtherField: true,
+    sectorMap: { 0:'fintech', 1:'fintech', 2:'retail', 3:'retail', 4:'marketplace', 5:'otro' }
   }
 ];
 
@@ -398,12 +179,10 @@ const Q_RETAIL = [
       'Falta de visibilidad unificada — no cruzamos señales entre canal físico y digital',
       'Fraude con tarjetas robadas (CNP) — transacciones no autorizadas',
       'Friendly fraud — cliente recibe producto y disputa de mala fe',
-      'Abuso de devoluciones y reembolsos — retornan productos usados o falsos',
       'Fraude en cuenta de comprador — ATO, uso de cuentas de otros',
       'Bots y scalping — compras automatizadas para reventa',
       'Fraude en marketplace — vendedores fraudulentos dentro de la plataforma',
-      'Falsos positivos — bloqueamos ventas legítimas y perdemos conversión',
-      'Fraude transfronterizo — operaciones internacionales de alto riesgo'
+      'Falsos positivos — bloqueamos ventas legítimas y perdemos conversión'
     ]
   },
   {
@@ -427,19 +206,7 @@ const Q_RETAIL = [
   {
     id:'Q05', title:'¿Qué herramientas o proveedores usan para prevención de fraude en retail?',
     type:'multi', required:false, max:99,
-    options:[
-      'Kount / Equifax','Sift Science','ClearSale','Signifyd','Forter','Riskified',
-      'LexisNexis Risk Solutions','Visa Advanced Authorization / CyberSource',
-      'Mastercard Decision Intelligence','Stripe Radar',
-      'Solución del procesador de pagos (Getnet, Fiserv, EVERTEC, etc.)',
-      'Sistema de gestión de devoluciones con reglas internas',
-      'Cámaras y analítica de video (para robo en tienda)',
-      'Loss Prevention interno — equipo humano sin herramienta formal',
-      'ERP con módulo de control de inventario (SAP, Oracle Retail, etc.)',
-      'Herramienta propia / motor de reglas interno',
-      'Sin herramienta formal de fraude',
-      'Otro'
-    ],
+    options:['Kount / Equifax','Sift Science','ClearSale','Signifyd','Forter','Riskified','LexisNexis Risk Solutions','Visa Advanced Authorization / CyberSource','Mastercard Decision Intelligence','Stripe Radar','Solución del procesador de pagos (Getnet, Fiserv, EVERTEC, etc.)','Sistema de gestión de devoluciones con reglas internas','Cámaras y analítica de video (para robo en tienda)','Loss Prevention interno — equipo humano sin herramienta formal','ERP con módulo de control de inventario (SAP, Oracle Retail, etc.)','Herramienta propia / motor de reglas interno','Sin herramienta formal de fraude','Otro'],
     hasOtherField: true
   },
   {
@@ -525,38 +292,28 @@ const Q_FINTECH = [
   {
     id:'Q05', title:'¿Qué soluciones antifraude usan actualmente?',
     type:'multi', required:false, max:99,
-    options:[
-      'FICO Falcon Fraud Manager','SAS Fraud Management','NICE Actimize','Sentinel',
-      'Oracle Financial Crime / OFSAA','ACI Fraud Management',
-      'BioCatch (biométrica conductual)','Monitor Plus',
-      'LexisNexis ThreatMetrix / TruValidate','Experian CrossCore / Hunter',
-      'Equifax / Kount','Feedzai','FeatureSpace (ARIC)',
-      'Visa Advanced Authorization / DPS','Mastercard Decision Intelligence / Ethoca',
-      'iuvity / iuviPROFILER','Provenir','BAE Systems NetReveal',
-      'Temenos Financial Crime Mitigation','Fiserv CardGuard / Fraud Risk Manager',
-      'Desarrollo propio / In-house','Motor de reglas básico / sin solución formal',
-      'Otro'
-    ],
+    options:['FICO Falcon Fraud Manager','SAS Fraud Management','NICE Actimize','Sentinel','Oracle Financial Crime / OFSAA','ACI Fraud Management','BioCatch (biométrica conductual)','Monitor Plus','LexisNexis ThreatMetrix / TruValidate','Experian CrossCore / Hunter','Equifax / Kount','Feedzai','FeatureSpace (ARIC)','Visa Advanced Authorization / DPS','Mastercard Decision Intelligence / Ethoca','iuvity / iuviPROFILER','Provenir','BAE Systems NetReveal','Temenos Financial Crime Mitigation','Fiserv CardGuard / Fraud Risk Manager','Desarrollo propio / In-house','Motor de reglas básico / sin solución formal','Otro'],
     hasOtherField: true
   },
   {
-    id:'Q06', title:'¿Qué capacidad no tienes hoy y más necesitas para tu programa antifraude?',
+    // ★ Reescrita V1.2: capacidades operativas reales
+    id:'Q06', title:'¿Qué capacidad operativa no tienes hoy y más necesitas para tu programa antifraude?',
     type:'multi', required:true, max:3,
     options:[
-      'Account Takeover (ATO) — detección y prevención de robo de credenciales',
-      'Fraude en onboarding / registro — identidades falsas o sintéticas',
-      'Fraude en pagos / transferencias — no autorizadas o bajo engaño',
-      'Fraude en tarjetas — CNP, card testing y clonación',
-      'Fraude en crédito / BNPL — documentación falsa o alterada',
-      'Lavado de dinero / cuentas mula — mover fondos ilícitos',
-      'Activación / primeras transacciones — prueba de tarjetas robadas',
-      'Uso recurrente comprometido — cuenta legítima comprometida',
-      'Retiro o cashout — materialización del fraude al transferir',
-      'Disputas y reversiones — chargebacks y reclamaciones',
-      'Abuso de promociones o incentivos',
-      'Fraude interno — empleados o terceros con acceso privilegiado',
-      'Ingeniería social / scams — cliente engañado autoriza operación',
-      'Fraude distribuido en múltiples etapas — sin patrón claro'
+      'Decisión en tiempo real — scoring sub-segundo sin fricción al cliente',
+      'Detección de identidad sintética en onboarding — más allá de KYC documental',
+      'Biometría conductual — análisis de comportamiento del usuario en sesión',
+      'Orquestación de reglas sin depender de TI — ajuste autónomo por el equipo de fraude',
+      'Modelo de ML que se re-entrene con mis datos — no solo reglas estáticas',
+      'Link analysis / grafos — identificar redes de cuentas mula y fraude organizado',
+      'Visibilidad cross-channel — correlacionar señales entre app, web y call center',
+      'Automatización de alertas — reducir la cola de revisión manual',
+      'Dashboard ejecutivo en tiempo real — métricas de fraude, aprobación y pérdidas',
+      'Integración con mi core bancario / procesador sin proyecto de TI de 12 meses',
+      'Detección de device fingerprint / emuladores / bots',
+      'Compartir inteligencia de fraude con el ecosistema (consorcio / red)',
+      'Cobertura para pagos instantáneos (PSE, Pix, SPEI, etc.)',
+      'Protección para nuevos canales: open banking, BaaS, embedded finance'
     ]
   }
 ];
@@ -607,16 +364,7 @@ const Q_MARKETPLACE = [
   {
     id:'Q05', title:'¿Qué herramientas o enfoques usan actualmente para control de fraude?',
     type:'multi', required:false, max:99,
-    options:[
-      'Auditorías manuales periódicas (sin herramienta formal)',
-      'SAS Analytics / SAS Fraud','SAP GRC','Oracle GRC / Oracle Analytics',
-      'IBM OpenPages','Palantir Gotham','QLIK / Power BI para análisis de datos',
-      'ACL / Galvanize (Diligent)','IDEA Data Analysis',
-      'Herramienta propia desarrollada internamente',
-      'Contraloría / Sistema de control fiscal del país',
-      'Sin herramienta — solo procesos manuales',
-      'Otro'
-    ],
+    options:['Auditorías manuales periódicas (sin herramienta formal)','SAS Analytics / SAS Fraud','SAP GRC','Oracle GRC / Oracle Analytics','IBM OpenPages','Palantir Gotham','QLIK / Power BI para análisis de datos','ACL / Galvanize (Diligent)','IDEA Data Analysis','Herramienta propia desarrollada internamente','Contraloría / Sistema de control fiscal del país','Sin herramienta — solo procesos manuales','Otro'],
     hasOtherField: true
   },
   {
@@ -642,10 +390,9 @@ const Q_MARKETPLACE = [
   }
 ];
 
-// Q07 & Q08 — shared across all sectors
 const Q_SHARED_MID = [
   {
-    id:'Q07', title:'¿Si pudiera mejorar una sola cosa en su sistema Antifraude?',
+    id:'Q07', title:'Si pudiera mejorar una sola cosa en su sistema Antifraude, ¿cuál sería?',
     type:'multi', required:true, max:3,
     options:[
       'Verificación automática de vendedores al registrarse (sin fricción)',
@@ -663,6 +410,30 @@ const Q_SHARED_MID = [
     id:'Q08', title:'¿Cómo sería su solución ideal?',
     type:'textarea', required:false,
     placeholder:'Escriba cómo sería para usted una solución ideal e integral…'
+  },
+  {
+    // ★ NUEVA: pérdidas económicas
+    id:'Q07B', title:'¿Cuánto estima que su organización pierde por fraude al año?',
+    type:'single', required:true, max:1, autoAdvance:true,
+    options:[
+      'Menos de USD $50,000',
+      'USD $50,000 — $200,000',
+      'USD $200,000 — $1,000,000',
+      'Más de USD $1,000,000',
+      'No tenemos esa cifra medida',
+      'Prefiero no responder'
+    ]
+  },
+  {
+    // ★ NUEVA: riesgo compartido (validación indirecta EaaS)
+    id:'Q07C', title:'¿Tu proveedor actual de antifraude comparte alguna responsabilidad financiera cuando ocurre un fraude no detectado?',
+    type:'single', required:true, max:1, autoAdvance:true,
+    options:[
+      'Sí — tiene algún tipo de garantía o cobertura',
+      'No — el riesgo financiero es 100% nuestro',
+      'Parcialmente — cubre algunos escenarios específicos',
+      'No lo sé'
+    ]
   }
 ];
 
@@ -670,43 +441,34 @@ const Q_UNIVERSAL_END = [
   {
     id:'Q09', title:'¿Qué tan satisfecho estás con tu solución actual?',
     type:'single', required:true, max:1, autoAdvance:true,
-    options:[
-      'Muy satisfecho — cubre casi todo lo que necesitamos',
-      'Satisfecho, pero hay brechas importantes',
-      'Regular — funciona pero deja mucho que desear',
-      'Insatisfecho — buscamos activamente alternativas',
-      'No tenemos solución formal todavía'
-    ]
+    options:['Muy satisfecho — cubre casi todo lo que necesitamos','Satisfecho, pero hay brechas importantes','Regular — funciona pero deja mucho que desear','Insatisfecho — buscamos activamente alternativas','No tenemos solución formal todavía']
   },
   {
     id:'Q10', title:'¿Considerarías cambiar tu proveedor actual?',
     type:'single', required:true, max:1,
-    options:[
-      'Sí — estamos evaluando opciones activamente',
-      'Tal vez — dependería de qué ofrece la alternativa',
-      'No — estamos comprometidos con el proveedor actual'
-    ],
-    conditionalTextarea: 1, // show textarea when option index 1 is selected
+    options:['Sí — estamos evaluando opciones activamente','Tal vez — dependería de qué ofrece la alternativa','No — estamos comprometidos con el proveedor actual'],
+    conditionalTextarea: 1,
     conditionalPlaceholder: '¿Qué necesitarías ver en una alternativa para considerarla?'
   },
   {
+    // ★ Ahora obligatoria
     id:'Q11', title:'¿Existe presupuesto disponible para una nueva solución antifraude este año?',
-    type:'single', required:false, max:1, autoAdvance:true,
-    options:[
-      'Sí, tenemos presupuesto asignado',
-      'Podría justificarse si el ROI es claro',
-      'No hay presupuesto disponible este año',
-      'Prefiero no responder esto'
-    ],
-    conditionalBudgetField: 0 // show budget field when option 0 selected
+    type:'single', required:true, max:1, autoAdvance:true,
+    options:['Sí, tenemos presupuesto asignado','Podría justificarse si el ROI es claro','No hay presupuesto disponible este año','Prefiero no responder'],
+    conditionalBudgetField: 0
   },
   {
-    id:'Q12', title:'¿A dónde enviamos el resumen del estudio cuando esté listo?',
-    type:'contact', required:true
+    // ★ REFORMULADA: pregunta de intención de contacto
+    id:'Q12', title:'¿Quieres que alguien de FraudEG te contacte?',
+    type:'contact-intent', required:true,
+    options:[
+      'Sí — quiero que me contacten para profundizar en soluciones antifraude',
+      'Solo quiero recibir el resumen del estudio cuando esté listo',
+      'No — solo quería participar en el estudio'
+    ]
   }
 ];
 
-// ── STATE ──
 let currentStep = 0;
 let answers = {};
 let currentFlow = [];
@@ -723,169 +485,130 @@ function buildFlow(sector) {
   }
   currentFlow = [...Q_UNIVERSAL_START, ...sectorQs, ...Q_SHARED_MID, ...Q_UNIVERSAL_END];
 }
-
-// Initialize with default flow — will rebuild after Q02
 buildFlow('retail');
 
-// ── RENDERING ──
 function renderStep(idx) {
   const q = currentFlow[idx];
   const container = document.getElementById('formContainer');
-
   let html = `<div class="step active" id="step-${idx}"><div class="step-card">`;
-  
-  // Header
   const badgeType = q.required ? '' : 'optional';
   const badgeText = q.required ? 'Obligatoria' : 'Opcional';
   html += `<div class="q-number">${q.id} <span class="badge ${badgeType}">${badgeText}</span></div>`;
   html += `<div class="q-title">${q.title}</div>`;
 
   if (q.type === 'single') {
-    if (q.max > 1) html += `<div class="q-hint">Selecciona una opción</div>`;
     html += `<div class="options-single" id="opts-${idx}">`;
     q.options.forEach((opt, i) => {
-      html += `<div class="opt-btn" data-idx="${i}" onclick="selectSingle(${idx},${i})">
-        <div class="opt-radio"></div><div>${opt}</div>
-      </div>`;
+      html += `<div class="opt-btn" data-idx="${i}" onclick="selectSingle(${idx},${i})"><div class="opt-radio"></div><div>${opt}</div></div>`;
     });
     html += '</div>';
-    if (q.hasOtherField) {
-      html += `<div class="open-field" id="other-${idx}">
-        <input type="text" placeholder="Especifica tu respuesta…" id="otherInput-${idx}">
-      </div>`;
-    }
-    if (q.conditionalTextarea !== undefined) {
-      html += `<div class="conditional-textarea" id="condText-${idx}">
-        <textarea placeholder="${q.conditionalPlaceholder||'Especifica…'}" id="condTextInput-${idx}"></textarea>
-      </div>`;
-    }
-    if (q.conditionalBudgetField !== undefined) {
-      html += `<div class="conditional-textarea" id="budgetField-${idx}">
-        <div class="field-group">
-          <label class="field-label">Valor aproximado (USD)</label>
-          <input type="text" placeholder="Ej: 50,000" id="budgetInput-${idx}">
-        </div>
-      </div>`;
-    }
+    if (q.hasOtherField) html += `<div class="open-field" id="other-${idx}"><input type="text" placeholder="Especifica tu respuesta…" id="otherInput-${idx}"></div>`;
+    if (q.conditionalTextarea !== undefined) html += `<div class="conditional-textarea" id="condText-${idx}"><textarea placeholder="${q.conditionalPlaceholder||'Especifica…'}" id="condTextInput-${idx}"></textarea></div>`;
+    if (q.conditionalBudgetField !== undefined) html += `<div class="conditional-textarea" id="budgetField-${idx}"><div class="field-group"><label class="field-label">Valor aproximado (USD)</label><input type="text" placeholder="Ej: 50,000" id="budgetInput-${idx}"></div></div>`;
   }
   else if (q.type === 'multi') {
     if (q.max < 99) html += `<div class="q-hint">Selecciona hasta ${q.max} opciones</div>`;
     html += `<div class="options-multi" id="opts-${idx}">`;
     q.options.forEach((opt, i) => {
-      html += `<div class="opt-check" data-idx="${i}" onclick="toggleMulti(${idx},${i})">
-        <div class="opt-checkbox"></div><div>${opt}</div>
-      </div>`;
+      html += `<div class="opt-check" data-idx="${i}" onclick="toggleMulti(${idx},${i})"><div class="opt-checkbox"></div><div>${opt}</div></div>`;
     });
     html += '</div>';
     if (q.max < 99) html += `<div class="max-hint" id="maxHint-${idx}">0 / ${q.max} seleccionadas</div>`;
-    if (q.hasOtherField) {
-      html += `<div class="open-field" id="other-${idx}">
-        <input type="text" placeholder="Especifica tu respuesta…" id="otherInput-${idx}">
-      </div>`;
-    }
+    if (q.hasOtherField) html += `<div class="open-field" id="other-${idx}"><input type="text" placeholder="Especifica tu respuesta…" id="otherInput-${idx}"></div>`;
   }
   else if (q.type === 'textarea') {
     html += `<textarea placeholder="${q.placeholder||''}" id="textareaInput-${idx}" rows="4"></textarea>`;
   }
-  else if (q.type === 'contact') {
-    html += `<div class="contact-grid">
-      <div class="field-group">
-        <label class="field-label">Nombre completo <span class="req">*</span></label>
-        <input type="text" id="c-name" placeholder="Tu nombre">
-        <div class="error-msg" id="err-name">Campo obligatorio</div>
-      </div>
-      <div class="field-group">
-        <label class="field-label">Empresa / Organización</label>
-        <input type="text" id="c-company" placeholder="Nombre de la empresa">
-      </div>
-      <div class="field-group">
-        <label class="field-label">Correo electrónico <span class="req">*</span></label>
-        <input type="email" id="c-email" placeholder="correo@empresa.com">
-        <div class="error-msg" id="err-email">Ingresa un correo válido</div>
-      </div>
-      <div class="field-group">
-        <label class="field-label">Teléfono <span class="req">*</span></label>
-        <input type="tel" id="c-phone" placeholder="+57 300 123 4567">
-        <div class="error-msg" id="err-phone">Ingresa un teléfono válido</div>
-      </div>
-      <div class="field-group">
-        <label class="field-label">País</label>
-        <input type="text" id="c-country" placeholder="País">
+  else if (q.type === 'contact-intent') {
+    html += `<div class="options-single" id="opts-${idx}">`;
+    q.options.forEach((opt, i) => {
+      html += `<div class="opt-btn" data-idx="${i}" onclick="selectContactIntent(${idx},${i})"><div class="opt-radio"></div><div>${opt}</div></div>`;
+    });
+    html += '</div>';
+    html += `<div class="contact-form" id="contactForm-${idx}">
+      <div class="header-label" id="contactFormLabel-${idx}">Por favor completa tus datos</div>
+      <div class="contact-grid">
+        <div class="field-group"><label class="field-label">Nombre completo <span class="req">*</span></label><input type="text" id="c-name" placeholder="Tu nombre"><div class="error-msg" id="err-name">Campo obligatorio</div></div>
+        <div class="field-group"><label class="field-label">Empresa / Organización</label><input type="text" id="c-company" placeholder="Nombre de la empresa"></div>
+        <div class="field-group"><label class="field-label">Correo electrónico <span class="req">*</span></label><input type="email" id="c-email" placeholder="correo@empresa.com"><div class="error-msg" id="err-email">Ingresa un correo válido</div></div>
+        <div class="field-group" id="phoneGroup-${idx}"><label class="field-label">Teléfono <span class="req">*</span></label><input type="tel" id="c-phone" placeholder="+57 300 123 4567"><div class="error-msg" id="err-phone">Ingresa un teléfono válido</div></div>
+        <div class="field-group"><label class="field-label">País</label><input type="text" id="c-country" placeholder="País"></div>
       </div>
     </div>`;
   }
 
-  // Buttons
   html += '<div class="btn-row">';
   if (idx > 0) html += `<button class="btn btn-ghost" onclick="goBack()">← Atrás</button>`;
   if (!q.required) html += `<button class="btn btn-skip" onclick="skipStep()">Saltar</button>`;
-  
-  if (q.type === 'contact') {
-    html += `<button class="btn btn-primary" onclick="submitForm()">Enviar ✓</button>`;
+  if (q.type === 'contact-intent') {
+    html += `<button class="btn btn-primary" id="submitBtn-${idx}" onclick="submitForm()" style="display:none;">Enviar ✓</button>`;
   } else {
-    // Renderizamos siempre el botón Continuar, pero lo ocultamos por defecto si la pregunta tiene autoAdvance
     html += `<button class="btn btn-primary" id="nextBtn-${idx}" onclick="goNext()" ${q.autoAdvance ? 'style="display:none;"' : ''}>Continuar →</button>`;
   }
-  html += '</div>';
-
-  html += '</div></div>';
+  html += '</div></div></div>';
   container.innerHTML = html;
   updateProgress();
 }
 
-// ── SELECTION HANDLERS ──
 function selectSingle(stepIdx, optIdx) {
   const q = currentFlow[stepIdx];
   answers[q.id] = { value: q.options[optIdx], index: optIdx };
+  document.querySelectorAll(`#opts-${stepIdx} .opt-btn`).forEach(el => el.classList.remove('selected'));
+  document.querySelector(`#opts-${stepIdx} .opt-btn[data-idx="${optIdx}"]`).classList.add('selected');
+  let shouldPause = false;
+  if (q.hasOtherField) {
+    const isOther = optIdx === q.options.length - 1;
+    document.getElementById(`other-${stepIdx}`).classList.toggle('visible', isOther);
+    if (isOther) { document.getElementById(`otherInput-${stepIdx}`).focus(); shouldPause = true; }
+  }
+  if (q.conditionalTextarea !== undefined) {
+    const isCond = optIdx === q.conditionalTextarea;
+    document.getElementById(`condText-${stepIdx}`).classList.toggle('visible', isCond);
+    if (isCond) { document.getElementById(`condTextInput-${stepIdx}`).focus(); shouldPause = true; }
+  }
+  if (q.conditionalBudgetField !== undefined) {
+    const isBudget = optIdx === q.conditionalBudgetField;
+    document.getElementById(`budgetField-${stepIdx}`).classList.toggle('visible', isBudget);
+    if (isBudget) { document.getElementById(`budgetInput-${stepIdx}`).focus(); shouldPause = true; }
+  }
+  const nextBtn = document.getElementById(`nextBtn-${stepIdx}`);
+  if (q.autoAdvance && nextBtn) nextBtn.style.display = shouldPause ? 'inline-block' : 'none';
+  if (q.autoAdvance && !shouldPause) setTimeout(() => goNext(), 400);
+}
 
-  // Visual
+// ★ NUEVO: Handler para Q12 con 3 flujos según intención
+function selectContactIntent(stepIdx, optIdx) {
+  const q = currentFlow[stepIdx];
+  answers[q.id] = { value: q.options[optIdx], index: optIdx };
   document.querySelectorAll(`#opts-${stepIdx} .opt-btn`).forEach(el => el.classList.remove('selected'));
   document.querySelector(`#opts-${stepIdx} .opt-btn[data-idx="${optIdx}"]`).classList.add('selected');
 
-  let shouldPauseAutoAdvance = false;
+  const form = document.getElementById(`contactForm-${stepIdx}`);
+  const submitBtn = document.getElementById(`submitBtn-${stepIdx}`);
+  const label = document.getElementById(`contactFormLabel-${stepIdx}`);
+  const phoneGroup = document.getElementById(`phoneGroup-${stepIdx}`);
 
-  // "Otro" field
-  if (q.hasOtherField) {
-    const isOther = optIdx === q.options.length - 1;
-    const otherEl = document.getElementById(`other-${stepIdx}`);
-    otherEl.classList.toggle('visible', isOther);
-    if (isOther) {
-      document.getElementById(`otherInput-${stepIdx}`).focus();
-      shouldPauseAutoAdvance = true;
-    }
-  }
-
-  // Conditional textarea (Q10)
-  if (q.conditionalTextarea !== undefined) {
-    const isCond = optIdx === q.conditionalTextarea;
-    const condEl = document.getElementById(`condText-${stepIdx}`);
-    condEl.classList.toggle('visible', isCond);
-    if (isCond) {
-      document.getElementById(`condTextInput-${stepIdx}`).focus();
-      shouldPauseAutoAdvance = true;
-    }
-  }
-
-  // Budget field (Q11)
-  if (q.conditionalBudgetField !== undefined) {
-    const isBudget = optIdx === q.conditionalBudgetField;
-    const budgetEl = document.getElementById(`budgetField-${stepIdx}`);
-    budgetEl.classList.toggle('visible', isBudget);
-    if (isBudget) {
-      document.getElementById(`budgetInput-${stepIdx}`).focus();
-      shouldPauseAutoAdvance = true;
-    }
-  }
-
-  // Si la pregunta era de auto-avance, pero requiere escribir, mostramos el botón Continuar
-  const nextBtn = document.getElementById(`nextBtn-${stepIdx}`);
-  if (q.autoAdvance && nextBtn) {
-    nextBtn.style.display = shouldPauseAutoAdvance ? 'inline-block' : 'none';
-  }
-
-  // Auto-advance (with slight delay for UX) si no hay que pausar
-  if (q.autoAdvance && !shouldPauseAutoAdvance) {
-    setTimeout(() => goNext(), 400);
+  if (optIdx === 0) {
+    // Sí — formulario completo con teléfono
+    form.classList.add('visible');
+    label.textContent = 'Para que te contactemos, necesitamos algunos datos';
+    phoneGroup.style.display = 'block';
+    submitBtn.style.display = 'inline-block';
+    submitBtn.textContent = 'Enviar ✓';
+    setTimeout(() => document.getElementById('c-name').focus(), 300);
+  } else if (optIdx === 1) {
+    // Solo resumen — sin teléfono
+    form.classList.add('visible');
+    label.textContent = 'Para enviarte el resumen, necesitamos tu nombre y correo';
+    phoneGroup.style.display = 'none';
+    submitBtn.style.display = 'inline-block';
+    submitBtn.textContent = 'Enviar ✓';
+    setTimeout(() => document.getElementById('c-name').focus(), 300);
+  } else {
+    // No — envío anónimo directo
+    form.classList.remove('visible');
+    submitBtn.style.display = 'inline-block';
+    submitBtn.textContent = 'Finalizar ✓';
   }
 }
 
@@ -893,180 +616,119 @@ function toggleMulti(stepIdx, optIdx) {
   const q = currentFlow[stepIdx];
   if (!answers[q.id]) answers[q.id] = { values: [], indices: [] };
   const ans = answers[q.id];
-
   const el = document.querySelector(`#opts-${stepIdx} .opt-check[data-idx="${optIdx}"]`);
-  const isSelected = el.classList.contains('selected');
-
-  if (isSelected) {
+  if (el.classList.contains('selected')) {
     el.classList.remove('selected');
     ans.indices = ans.indices.filter(i => i !== optIdx);
     ans.values = ans.indices.map(i => q.options[i]);
   } else {
-    if (q.max < 99 && ans.indices.length >= q.max) {
-      showToast(`Máximo ${q.max} opciones`);
-      return;
-    }
+    if (q.max < 99 && ans.indices.length >= q.max) { showToast(`Máximo ${q.max} opciones`); return; }
     el.classList.add('selected');
     ans.indices.push(optIdx);
     ans.values = ans.indices.map(i => q.options[i]);
   }
-
-  // Max hint
   if (q.max < 99) {
-    const hintEl = document.getElementById(`maxHint-${stepIdx}`);
-    hintEl.textContent = `${ans.indices.length} / ${q.max} seleccionadas`;
-    const wrapper = document.getElementById(`opts-${stepIdx}`);
-    wrapper.classList.toggle('max-reached', ans.indices.length >= q.max);
+    document.getElementById(`maxHint-${stepIdx}`).textContent = `${ans.indices.length} / ${q.max} seleccionadas`;
+    document.getElementById(`opts-${stepIdx}`).classList.toggle('max-reached', ans.indices.length >= q.max);
   }
-
-  // "Otro" field
   if (q.hasOtherField) {
     const otherIdx = q.options.length - 1;
-    const otherEl = document.getElementById(`other-${stepIdx}`);
-    otherEl.classList.toggle('visible', ans.indices.includes(otherIdx));
+    document.getElementById(`other-${stepIdx}`).classList.toggle('visible', ans.indices.includes(otherIdx));
   }
 }
 
-// ── NAVIGATION ──
 function goNext() {
   const q = currentFlow[currentStep];
-
-  // Validation
   if (q.required) {
-    if (q.type === 'single' && !answers[q.id]) {
-      showToast('Selecciona una opción para continuar');
-      return;
-    }
-    if (q.type === 'multi' && (!answers[q.id] || answers[q.id].indices.length === 0)) {
-      showToast('Selecciona al menos una opción');
-      return;
-    }
+    if (q.type === 'single' && !answers[q.id]) { showToast('Selecciona una opción para continuar'); return; }
+    if (q.type === 'multi' && (!answers[q.id] || answers[q.id].indices.length === 0)) { showToast('Selecciona al menos una opción'); return; }
   }
-
-  // Capture "Otro" text
   if (q.hasOtherField && answers[q.id]) {
-    const otherInput = document.getElementById(`otherInput-${currentStep}`);
-    if (otherInput && otherInput.parentElement.classList.contains('visible')) {
-      answers[q.id].otherText = otherInput.value;
-    }
+    const oi = document.getElementById(`otherInput-${currentStep}`);
+    if (oi && oi.parentElement.classList.contains('visible')) answers[q.id].otherText = oi.value;
   }
-
-  // Capture conditional textarea
   if (q.conditionalTextarea !== undefined && answers[q.id]) {
-    const condInput = document.getElementById(`condTextInput-${currentStep}`);
-    if (condInput && condInput.parentElement.classList.contains('visible')) {
-      if (q.required && !condInput.value.trim()) {
-        showToast('Por favor completa el campo adicional');
-        return;
-      }
-      answers[q.id].conditionalText = condInput.value;
+    const ci = document.getElementById(`condTextInput-${currentStep}`);
+    if (ci && ci.parentElement.classList.contains('visible')) {
+      if (q.required && !ci.value.trim()) { showToast('Por favor completa el campo adicional'); return; }
+      answers[q.id].conditionalText = ci.value;
     }
   }
-
-  // Capture budget
   if (q.conditionalBudgetField !== undefined && answers[q.id]) {
-    const budgetInput = document.getElementById(`budgetInput-${currentStep}`);
-    if (budgetInput && budgetInput.parentElement.classList.contains('visible')) {
-      answers[q.id].budgetValue = budgetInput.value;
-    }
+    const bi = document.getElementById(`budgetInput-${currentStep}`);
+    if (bi && bi.parentElement.classList.contains('visible')) answers[q.id].budgetValue = bi.value;
   }
-
-  // Capture textarea
   if (q.type === 'textarea') {
     const ta = document.getElementById(`textareaInput-${currentStep}`);
     answers[q.id] = { value: ta.value };
   }
-
-  // After Q02 — rebuild flow based on sector
   if (q.id === 'Q02' && answers.Q02) {
     const sectorKey = q.sectorMap[answers.Q02.index] || 'otro';
     buildFlow(sectorKey);
-    currentStep = 2; // jump to Q03
+    currentStep = 2;
     renderStep(currentStep);
     return;
   }
-
   currentStep++;
-  if (currentStep < currentFlow.length) {
-    renderStep(currentStep);
-  }
+  if (currentStep < currentFlow.length) renderStep(currentStep);
 }
 
 function goBack() {
   if (currentStep > 0) {
-    // If we're at Q03 sector-specific, go back to Q02
-    if (currentStep === 2) {
-      currentStep = 1;
-    } else {
-      currentStep--;
-    }
+    if (currentStep === 2) currentStep = 1;
+    else currentStep--;
     renderStep(currentStep);
   }
 }
 
 function skipStep() {
   currentStep++;
-  if (currentStep < currentFlow.length) {
-    renderStep(currentStep);
-  }
+  if (currentStep < currentFlow.length) renderStep(currentStep);
 }
 
-// ── SUBMIT ──
 function submitForm() {
-  // Validate contact fields
-  const name = document.getElementById('c-name').value.trim();
-  const email = document.getElementById('c-email').value.trim();
-  const phone = document.getElementById('c-phone').value.trim();
-  const company = document.getElementById('c-company').value.trim();
-  const country = document.getElementById('c-country').value.trim();
+  const q12 = answers.Q12;
+  if (!q12) { showToast('Selecciona una opción'); return; }
+  const intent = q12.index;
 
-  let valid = true;
+  let contactData = { name:'', email:'', phone:'', company:'', country:'' };
 
-  if (!name) {
-    document.getElementById('err-name').classList.add('visible');
-    document.getElementById('err-name').parentElement.classList.add('field-error');
-    valid = false;
-  } else {
-    document.getElementById('err-name').classList.remove('visible');
-    document.getElementById('err-name').parentElement.classList.remove('field-error');
+  if (intent === 0 || intent === 1) {
+    const name = document.getElementById('c-name').value.trim();
+    const email = document.getElementById('c-email').value.trim();
+    const phone = document.getElementById('c-phone').value.trim();
+    const company = document.getElementById('c-company').value.trim();
+    const country = document.getElementById('c-country').value.trim();
+    let valid = true;
+
+    if (!name) { document.getElementById('err-name').classList.add('visible'); document.getElementById('err-name').parentElement.classList.add('field-error'); valid = false; }
+    else { document.getElementById('err-name').classList.remove('visible'); document.getElementById('err-name').parentElement.classList.remove('field-error'); }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { document.getElementById('err-email').classList.add('visible'); document.getElementById('err-email').parentElement.classList.add('field-error'); valid = false; }
+    else { document.getElementById('err-email').classList.remove('visible'); document.getElementById('err-email').parentElement.classList.remove('field-error'); }
+
+    if (intent === 0) {
+      if (!phone || phone.length < 7) { document.getElementById('err-phone').classList.add('visible'); document.getElementById('err-phone').parentElement.classList.add('field-error'); valid = false; }
+      else { document.getElementById('err-phone').classList.remove('visible'); document.getElementById('err-phone').parentElement.classList.remove('field-error'); }
+    }
+
+    if (!valid) { showToast('Completa los campos obligatorios'); return; }
+    contactData = { name, email, phone, company, country };
   }
 
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email)) {
-    document.getElementById('err-email').classList.add('visible');
-    document.getElementById('err-email').parentElement.classList.add('field-error');
-    valid = false;
-  } else {
-    document.getElementById('err-email').classList.remove('visible');
-    document.getElementById('err-email').parentElement.classList.remove('field-error');
-  }
+  answers.Q12.contact = contactData;
+  answers.Q12.intent = intent === 0 ? 'CONTACTAR' : intent === 1 ? 'SOLO_RESUMEN' : 'NO_CONTACTO';
 
-  if (!phone || phone.length < 7) {
-    document.getElementById('err-phone').classList.add('visible');
-    document.getElementById('err-phone').parentElement.classList.add('field-error');
-    valid = false;
-  } else {
-    document.getElementById('err-phone').classList.remove('visible');
-    document.getElementById('err-phone').parentElement.classList.remove('field-error');
-  }
-
-  if (!valid) {
-    showToast('Completa los campos obligatorios');
-    return;
-  }
-
-  answers.Q12 = { name, email, phone, company, country };
-
-  // Build payload
   const payload = {
     timestamp: new Date().toISOString(),
     sector: selectedSector,
-    responses: {}
+    responses: {},
+    contact_intent: answers.Q12.intent,
+    contact: contactData
   };
 
   for (const [key, val] of Object.entries(answers)) {
     if (val.values) {
-      // multi-select
       let text = val.values.join(' | ');
       if (val.otherText) text += ` | OTRO: ${val.otherText}`;
       payload.responses[key] = text;
@@ -1076,66 +738,44 @@ function submitForm() {
       if (val.conditionalText) text += ` → ${val.conditionalText}`;
       if (val.budgetValue) text += ` [Presupuesto: ${val.budgetValue}]`;
       payload.responses[key] = text;
-    } else if (val.name) {
-      // contact
-      payload.responses[key] = `${val.name} | ${val.company} | ${val.email} | ${val.phone} | ${val.country}`;
-      payload.contact = val;
     }
   }
 
-  // Send to Apps Script
-  const overlay = document.getElementById('sendingOverlay');
-  overlay.classList.add('visible');
-
+  document.getElementById('sendingOverlay').classList.add('visible');
   fetch(APPS_SCRIPT_URL, {
-    method: 'POST',
-    mode: 'no-cors',
+    method: 'POST', mode: 'no-cors',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload)
-  })
-  .then(() => {
-    overlay.classList.remove('visible');
-    showThankYou();
-  })
-  .catch(err => {
-    overlay.classList.remove('visible');
-    // With no-cors, we can't read the response, but the request was sent
-    showThankYou();
-  });
+  }).then(() => { document.getElementById('sendingOverlay').classList.remove('visible'); showThankYou(intent); })
+    .catch(() => { document.getElementById('sendingOverlay').classList.remove('visible'); showThankYou(intent); });
 }
 
-function showThankYou() {
-  const container = document.getElementById('formContainer');
-  container.innerHTML = `
-    <div class="thank-you">
-      <div class="icon">✓</div>
-      <h2>¡Gracias por participar!</h2>
-      <p>Tu respuesta ha sido registrada. Cuando el estudio esté listo, recibirás el resumen en el correo que nos proporcionaste.</p>
-    </div>
-  `;
-  // Hide progress
+function showThankYou(intent) {
+  const messages = {
+    0: { title: '¡Gracias por participar!', body: 'Tu respuesta ha sido registrada. Alguien del equipo de FraudEG se pondrá en contacto contigo en los próximos días. También recibirás el resumen del estudio cuando esté listo.' },
+    1: { title: '¡Gracias por participar!', body: 'Tu respuesta ha sido registrada. Cuando el estudio esté listo, recibirás el resumen en el correo que nos proporcionaste.' },
+    2: { title: '¡Gracias por tu tiempo!', body: 'Tu respuesta ha sido registrada de forma anónima y contribuirá al estudio de mercado antifraude de LATAM.' }
+  };
+  const msg = messages[intent] || messages[2];
+  document.getElementById('formContainer').innerHTML = `<div class="thank-you"><div class="icon">✓</div><h2>${msg.title}</h2><p>${msg.body}</p></div>`;
   document.querySelector('.progress-wrap').style.display = 'none';
 }
 
-// ── PROGRESS ──
 function updateProgress() {
   const total = currentFlow.length;
-  const pct = Math.round(((currentStep) / total) * 100);
+  const pct = Math.round((currentStep / total) * 100);
   document.getElementById('progressFill').style.width = pct + '%';
   document.getElementById('stepCurrent').textContent = currentStep + 1;
   document.getElementById('stepTotal').textContent = total;
   document.getElementById('progressPct').textContent = pct + '%';
 }
 
-// ── TOAST ──
 function showToast(msg) {
   const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
+  t.textContent = msg; t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2500);
 }
 
-// ── INIT ──
 renderStep(0);
 </script>
 </body>
