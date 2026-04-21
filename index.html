@@ -119,7 +119,7 @@ input::placeholder,textarea::placeholder{color:var(--text-muted)}
   <div class="progress-wrap">
     <div class="progress-bar-bg"><div class="progress-bar-fill" id="progressFill" style="width:0%"></div></div>
     <div class="progress-info">
-      <span>Pregunta <span class="step-label" id="stepCurrent">1</span> de <span id="stepTotal">14</span></span>
+      <span>Pregunta <span class="step-label" id="stepCurrent">1</span> de <span id="stepTotal">15</span></span>
       <span id="progressPct">0%</span>
     </div>
   </div>
@@ -133,17 +133,15 @@ input::placeholder,textarea::placeholder{color:var(--text-muted)}
 
 <script>
 // ════════════════════════════════════════════════════════════
-// FraudEG Survey V1.2.1
-// Mejoras sobre V1.2:
-//  - Auto-avance en multi-select al llegar al máximo (si no es "Otro")
-//  - "Otro" con campo abierto en Q03, Q04, Q06 de todos los sectores
-//  - Captura de tiempo de llenado (duration_seconds en payload)
-//  - URL del Apps Script integrada
+// FraudEG Survey V1.3
+// Cambios vs V1.2.1:
+//  - Q07D NUEVA: validación dedicada de custodia preventiva (EaaS end-to-end)
+//  - Q_OTRO: flujo completo para sectores no contemplados (crypto, aviación, etc.)
+//  - Total: 15 preguntas para TODOS los flujos (consistente)
 // ════════════════════════════════════════════════════════════
 
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzraWiELDN2ZH-HVDEaOPrYPtdxHLkOdxQ0CN0bmUt4YSBTLHs3_RGHvmJI-qP81aMrpQ/exec';
 
-// ── Tiempo de llenado ──
 const surveyStartTime = Date.now();
 
 const Q_UNIVERSAL_START = [
@@ -156,7 +154,7 @@ const Q_UNIVERSAL_START = [
   {
     id:'Q02', title:'¿En qué sector opera tu organización?',
     type:'single', required:true, max:1, autoAdvance:true,
-    options:['Banca / Financiero','Fintech / Gateway / Pagos digitales','E-commerce CNP (Tarjeta no Presente)','Retail físico / Omnicanal (POS + Canal Digital)','Marketplace','Otro'],
+    options:['Banca / Financiero','Fintech / Gateway / Pagos digitales','E-commerce CNP (Tarjeta no Presente)','Retail físico / Omnicanal (POS + Canal Digital)','Marketplace','Otro (escriba su sector)'],
     hasOtherField: true,
     sectorMap: { 0:'fintech', 1:'fintech', 2:'retail', 3:'retail', 4:'marketplace', 5:'otro' }
   }
@@ -407,6 +405,92 @@ const Q_MARKETPLACE = [
   }
 ];
 
+// ★ NUEVO V1.3: Flujo genérico para sectores no contemplados (crypto, aviación, telcos, buques, insurtech, etc.)
+const Q_OTRO = [
+  {
+    id:'Q03', title:'¿Cuál es el mayor problema de fraude o pérdida que enfrenta tu organización hoy?',
+    type:'multi', required:true, max:3,
+    options:[
+      'Suplantación de identidad — cuentas o clientes falsos',
+      'Account Takeover — compromiso de cuentas legítimas',
+      'Fraude en pagos o transacciones no autorizadas',
+      'Fraude en reclamaciones, devoluciones o reembolsos',
+      'Fraude interno — empleados o insiders con acceso privilegiado',
+      'Ingeniería social / scams — engaño a clientes o empleados',
+      'Fraude documental — documentos falsos, alterados o robados',
+      'Lavado de dinero — uso para mover fondos ilícitos',
+      'Abuso de programas de beneficios, promociones o lealtad',
+      'Bots y automatización maliciosa',
+      'Fraude regulatorio o de compliance',
+      'Pérdida de activos físicos, inventario o mercancía',
+      'Manipulación de datos o información crítica',
+      'Colusión entre terceros — proveedores, clientes, socios',
+      'Fraude en contratos o suscripciones',
+      'Otro'
+    ],
+    hasOtherField: true
+  },
+  {
+    id:'Q04', title:'¿En qué área de tu operación el fraude genera mayor impacto hoy?',
+    type:'multi', required:true, max:3,
+    options:[
+      'Pérdidas financieras directas — dinero o activos robados',
+      'Costos operativos — revisión manual, investigación, disputas',
+      'Reputación y confianza del cliente',
+      'Cumplimiento regulatorio / riesgo de multas',
+      'Fricción en clientes legítimos — bloqueamos demasiado',
+      'Velocidad de operaciones — el control retrasa el negocio',
+      'Inventario, activos físicos o logística',
+      'Relaciones con contrapartes, socios o reguladores',
+      'Capacidad de crecer / escalar — el fraude limita expansión',
+      'Detección tardía — sabemos del fraude días después',
+      'Falta de visibilidad en tiempo real',
+      'Costo prohibitivo de la prevención',
+      'Otro'
+    ],
+    hasOtherField: true
+  },
+  {
+    id:'Q05', title:'¿Qué tipo de solución usas actualmente para prevenir fraude?',
+    type:'multi', required:false, max:99,
+    options:[
+      'Plataforma especializada antifraude (nombre reconocido en el mercado)',
+      'Solución desarrollada internamente / in-house',
+      'Motor de reglas básico',
+      'Herramientas genéricas (BI, analytics) adaptadas',
+      'Revisión manual — equipo humano sin herramienta formal',
+      'Soluciones de terceros del ecosistema (procesador, operador, proveedor)',
+      'Auditorías periódicas sin prevención en tiempo real',
+      'Combinación fragmentada de varias herramientas',
+      'Sin solución formal — confiamos en procesos y políticas',
+      'Otro'
+    ],
+    hasOtherField: true
+  },
+  {
+    id:'Q06', title:'¿Qué capacidad antifraude necesitas y no tienes hoy?',
+    type:'multi', required:true, max:3,
+    options:[
+      'Detección en tiempo real antes de que ocurra la pérdida',
+      'Scoring de riesgo unificado por cliente o transacción',
+      'Identificación de redes de fraude o colusión entre actores',
+      'Modelo predictivo que aprenda con nuestros datos',
+      'Dashboard ejecutivo con métricas claras de fraude y pérdidas',
+      'Automatización de decisiones sin revisión manual',
+      'Integración con sistemas actuales sin proyecto mayor',
+      'Capacidad de ajustar reglas sin depender de TI',
+      'Solución costo-eficiente para nuestro volumen',
+      'Cobertura cross-channel — web, app, API, presencial',
+      'Garantía financiera si ocurre un fraude no detectado',
+      'Modelo de custodia preventiva de fondos o activos',
+      'Inteligencia compartida con otras empresas del sector',
+      'Análisis forense post-incidente',
+      'Otro'
+    ],
+    hasOtherField: true
+  }
+];
+
 const Q_SHARED_MID = [
   {
     id:'Q07', title:'Si pudiera mejorar una sola cosa en su sistema Antifraude, ¿cuál sería?',
@@ -448,6 +532,18 @@ const Q_SHARED_MID = [
       'No — el riesgo financiero es 100% nuestro',
       'Parcialmente — cubre algunos escenarios específicos',
       'No lo sé'
+    ]
+  },
+  {
+    // ★ NUEVA V1.3: Validación dedicada de EaaS end-to-end (custodia preventiva)
+    id:'Q07D', title:'Si existiera una solución antifraude que además de detectar, retuviera temporalmente los fondos o activos de transacciones sospechosas hasta validar su legitimidad (modelo de custodia preventiva), ¿cuál sería tu posición?',
+    type:'single', required:true, max:1, autoAdvance:true,
+    options:[
+      'Muy interesado — resolvería un problema crítico que tenemos hoy',
+      'Interesado, pero solo para transacciones específicas (alto valor o alto riesgo)',
+      'Tal vez — dependería del delay máximo aceptable y el costo',
+      'Poco viable — nuestro modelo requiere velocidad de settlement',
+      'No aplicable a nuestra operación'
     ]
   }
 ];
@@ -494,7 +590,8 @@ function buildFlow(sector) {
     case 'fintech': sectorQs = Q_FINTECH; break;
     case 'retail': sectorQs = Q_RETAIL; break;
     case 'marketplace': sectorQs = Q_MARKETPLACE; break;
-    default: sectorQs = []; break;
+    case 'otro': sectorQs = Q_OTRO; break; // ★ NUEVO V1.3: flujo genérico
+    default: sectorQs = Q_OTRO; break;
   }
   currentFlow = [...Q_UNIVERSAL_START, ...sectorQs, ...Q_SHARED_MID, ...Q_UNIVERSAL_END];
 }
@@ -621,7 +718,6 @@ function selectContactIntent(stepIdx, optIdx) {
   }
 }
 
-// ★ MEJORADO V1.2.1: Auto-avance al llegar al máximo
 function toggleMulti(stepIdx, optIdx) {
   const q = currentFlow[stepIdx];
   if (!answers[q.id]) answers[q.id] = { values: [], indices: [] };
@@ -640,25 +736,22 @@ function toggleMulti(stepIdx, optIdx) {
     ans.values = ans.indices.map(i => q.options[i]);
   }
 
-  // Actualizar hint de contador
   if (q.max < 99) {
     document.getElementById(`maxHint-${stepIdx}`).textContent = `${ans.indices.length} / ${q.max} seleccionadas`;
     document.getElementById(`opts-${stepIdx}`).classList.toggle('max-reached', ans.indices.length >= q.max);
   }
 
-  // Manejo de "Otro"
   const otherIdx = q.hasOtherField ? q.options.length - 1 : -1;
   const hasOtherSelected = otherIdx >= 0 && ans.indices.includes(otherIdx);
   if (q.hasOtherField) {
     const otherEl = document.getElementById(`other-${stepIdx}`);
     otherEl.classList.toggle('visible', hasOtherSelected);
     if (hasOtherSelected && !wasSelected && optIdx === otherIdx) {
-      // Enfocar el campo cuando acaba de seleccionar "Otro"
       setTimeout(() => document.getElementById(`otherInput-${stepIdx}`).focus(), 100);
     }
   }
 
-  // ★ AUTO-AVANCE: Si llegó al máximo y NO tiene "Otro" seleccionado
+  // Auto-avance al llegar al máximo (si no está "Otro" seleccionado)
   if (!wasSelected && q.max < 99 && ans.indices.length === q.max && !hasOtherSelected && !ans._autoAdvanced) {
     ans._autoAdvanced = true;
     showToast('✓ Avanzando…', 'success');
@@ -706,7 +799,6 @@ function goNext() {
 
 function goBack() {
   if (currentStep > 0) {
-    // Al ir atrás, resetear el flag de auto-advance para permitir que vuelva a disparar
     const prevQ = currentFlow[currentStep - 1];
     if (prevQ && answers[prevQ.id]) delete answers[prevQ.id]._autoAdvanced;
     if (currentStep === 2) currentStep = 1;
@@ -753,7 +845,6 @@ function submitForm() {
   answers.Q12.contact = contactData;
   answers.Q12.intent = intent === 0 ? 'CONTACTAR' : intent === 1 ? 'SOLO_RESUMEN' : 'NO_CONTACTO';
 
-  // ★ Tiempo de llenado
   const durationSeconds = Math.round((Date.now() - surveyStartTime) / 1000);
   const durationMin = Math.floor(durationSeconds / 60);
   const durationSec = durationSeconds % 60;
@@ -812,7 +903,6 @@ function updateProgress() {
   document.getElementById('progressPct').textContent = pct + '%';
 }
 
-// ★ MEJORADO: toast con variante success
 function showToast(msg, variant) {
   const t = document.getElementById('toast');
   t.textContent = msg;
