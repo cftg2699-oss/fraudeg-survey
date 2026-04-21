@@ -99,6 +99,7 @@ input::placeholder,textarea::placeholder{color:var(--text-muted)}
 .field-error input,.field-error textarea{border-color:var(--danger)!important}
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--danger);color:#fff;padding:14px 28px;border-radius:var(--radius-sm);font-size:.95rem;font-weight:500;opacity:0;transition:all .3s;z-index:999;pointer-events:none;box-shadow:0 8px 24px rgba(248,81,73,.3)}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.success{background:var(--success);box-shadow:0 8px 24px rgba(46,160,67,.35)}
 .sending-overlay{position:fixed;inset:0;background:rgba(13,17,23,.85);display:none;align-items:center;justify-content:center;z-index:1000;backdrop-filter:blur(4px)}
 .sending-overlay.visible{display:flex}
 .sending-box{text-align:center}
@@ -132,19 +133,18 @@ input::placeholder,textarea::placeholder{color:var(--text-muted)}
 
 <script>
 // ════════════════════════════════════════════════════════════
-// FraudEG Survey V1.2 FINAL
-// Cambios vs V1.1:
-//  1. Q03 Retail limpiada (20→16 opts, duplicados eliminados)
-//  2. Q06 Fintech reescrita (capacidades operativas reales)
-//  3. Q07B NUEVA: pérdidas económicas USD
-//  4. Q07C NUEVA: riesgo compartido (validación indirecta EaaS)
-//  5. Q11 obligatoria
-//  6. MarketPlace header corregido
-//  7. Q12 reformulada: pregunta de intención de contacto
-// Total: 14 preguntas
+// FraudEG Survey V1.2.1
+// Mejoras sobre V1.2:
+//  - Auto-avance en multi-select al llegar al máximo (si no es "Otro")
+//  - "Otro" con campo abierto en Q03, Q04, Q06 de todos los sectores
+//  - Captura de tiempo de llenado (duration_seconds en payload)
+//  - URL del Apps Script integrada
 // ════════════════════════════════════════════════════════════
 
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwqDfyCw72xrAGzP_n_cMY4Yw0shrIUioaHc3a8hl21Y7yCPWKBtU9GHZyVnsRFKdF9oA/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzraWiELDN2ZH-HVDEaOPrYPtdxHLkOdxQ0CN0bmUt4YSBTLHs3_RGHvmJI-qP81aMrpQ/exec';
+
+// ── Tiempo de llenado ──
+const surveyStartTime = Date.now();
 
 const Q_UNIVERSAL_START = [
   {
@@ -182,8 +182,10 @@ const Q_RETAIL = [
       'Fraude en cuenta de comprador — ATO, uso de cuentas de otros',
       'Bots y scalping — compras automatizadas para reventa',
       'Fraude en marketplace — vendedores fraudulentos dentro de la plataforma',
-      'Falsos positivos — bloqueamos ventas legítimas y perdemos conversión'
-    ]
+      'Falsos positivos — bloqueamos ventas legítimas y perdemos conversión',
+      'Otro'
+    ],
+    hasOtherField: true
   },
   {
     id:'Q04', title:'¿En qué áreas de tu operación el fraude genera mayor impacto hoy?',
@@ -200,8 +202,10 @@ const Q_RETAIL = [
       'El fraude crece más rápido que nuestra capacidad de detectar manualmente',
       'No tenemos visibilidad en tiempo real — sabemos del fraude días después',
       'El costo de la operación antifraude es demasiado alto',
-      'Las temporadas altas (Hot Sale, Navidad) nos desbordan'
-    ]
+      'Las temporadas altas (Hot Sale, Navidad) nos desbordan',
+      'Otro'
+    ],
+    hasOtherField: true
   },
   {
     id:'Q05', title:'¿Qué herramientas o proveedores usan para prevención de fraude en retail?',
@@ -231,8 +235,10 @@ const Q_RETAIL = [
       'Integración nativa con plataforma de procesamiento de pagos',
       'Dashboard con métricas de fraude, aprobación y chargeback',
       'Solución costo-eficiente — pago por transacción aprobada, no por volumen total',
-      'Cobertura para mercados B2B y marketplace dentro de la plataforma'
-    ]
+      'Cobertura para mercados B2B y marketplace dentro de la plataforma',
+      'Otro'
+    ],
+    hasOtherField: true
   }
 ];
 
@@ -266,8 +272,10 @@ const Q_FINTECH = [
       'Merchant fraud — comercios para lavar dinero o auto-procesar',
       'Mule accounts — cuentas intermediarias para mover dinero fraudulento',
       'Friendly fraud — clientes desconocen compras',
-      'Abuso de cuentas múltiples para incentivos — farming de cuentas'
-    ]
+      'Abuso de cuentas múltiples para incentivos — farming de cuentas',
+      'Otro'
+    ],
+    hasOtherField: true
   },
   {
     id:'Q04', title:'¿Qué tipo de fraude genera mayor impacto en tu institución hoy?',
@@ -286,8 +294,10 @@ const Q_FINTECH = [
       'Abuso de promociones o incentivos',
       'Fraude interno — empleados o terceros con acceso privilegiado',
       'Ingeniería social / scams — cliente engañado autoriza la operación',
-      'Fraude distribuido en múltiples etapas — sin patrón claro'
-    ]
+      'Fraude distribuido en múltiples etapas — sin patrón claro',
+      'Otro'
+    ],
+    hasOtherField: true
   },
   {
     id:'Q05', title:'¿Qué soluciones antifraude usan actualmente?',
@@ -296,7 +306,6 @@ const Q_FINTECH = [
     hasOtherField: true
   },
   {
-    // ★ Reescrita V1.2: capacidades operativas reales
     id:'Q06', title:'¿Qué capacidad operativa no tienes hoy y más necesitas para tu programa antifraude?',
     type:'multi', required:true, max:3,
     options:[
@@ -313,8 +322,10 @@ const Q_FINTECH = [
       'Detección de device fingerprint / emuladores / bots',
       'Compartir inteligencia de fraude con el ecosistema (consorcio / red)',
       'Cobertura para pagos instantáneos (PSE, Pix, SPEI, etc.)',
-      'Protección para nuevos canales: open banking, BaaS, embedded finance'
-    ]
+      'Protección para nuevos canales: open banking, BaaS, embedded finance',
+      'Otro'
+    ],
+    hasOtherField: true
   }
 ];
 
@@ -337,8 +348,10 @@ const Q_MARKETPLACE = [
       'Desvío fuera de la plataforma — evitan comisiones',
       'Lavado de dinero — transacciones ficticias',
       'Fraude interno — empleados o moderadores manipulan decisiones',
-      'Fraude distribuido — múltiples abusos pequeños sin patrón claro'
-    ]
+      'Fraude distribuido — múltiples abusos pequeños sin patrón claro',
+      'Otro'
+    ],
+    hasOtherField: true
   },
   {
     id:'Q04', title:'¿Cuál es el mayor obstáculo para mejorar la detección de fraude?',
@@ -358,8 +371,10 @@ const Q_MARKETPLACE = [
       'Integraciones complejas — herramientas difíciles de implementar',
       'Limitaciones presupuestarias — soluciones antifraude costosas',
       'Falta de automatización — demasiada revisión manual',
-      'Cambios constantes en patrones de fraude — modelos se vuelven obsoletos'
-    ]
+      'Cambios constantes en patrones de fraude — modelos se vuelven obsoletos',
+      'Otro'
+    ],
+    hasOtherField: true
   },
   {
     id:'Q05', title:'¿Qué herramientas o enfoques usan actualmente para control de fraude?',
@@ -385,8 +400,10 @@ const Q_MARKETPLACE = [
       'Monitoreo de fraude logístico (tracking, envíos, entregas)',
       'Automatización de decisiones sin revisión manual',
       'Alertas tempranas de creación masiva de cuentas o tiendas',
-      'Dashboards con métricas claras del fraude y su impacto'
-    ]
+      'Dashboards con métricas claras del fraude y su impacto',
+      'Otro'
+    ],
+    hasOtherField: true
   }
 ];
 
@@ -412,7 +429,6 @@ const Q_SHARED_MID = [
     placeholder:'Escriba cómo sería para usted una solución ideal e integral…'
   },
   {
-    // ★ NUEVA: pérdidas económicas
     id:'Q07B', title:'¿Cuánto estima que su organización pierde por fraude al año?',
     type:'single', required:true, max:1, autoAdvance:true,
     options:[
@@ -425,7 +441,6 @@ const Q_SHARED_MID = [
     ]
   },
   {
-    // ★ NUEVA: riesgo compartido (validación indirecta EaaS)
     id:'Q07C', title:'¿Tu proveedor actual de antifraude comparte alguna responsabilidad financiera cuando ocurre un fraude no detectado?',
     type:'single', required:true, max:1, autoAdvance:true,
     options:[
@@ -451,14 +466,12 @@ const Q_UNIVERSAL_END = [
     conditionalPlaceholder: '¿Qué necesitarías ver en una alternativa para considerarla?'
   },
   {
-    // ★ Ahora obligatoria
     id:'Q11', title:'¿Existe presupuesto disponible para una nueva solución antifraude este año?',
     type:'single', required:true, max:1, autoAdvance:true,
     options:['Sí, tenemos presupuesto asignado','Podría justificarse si el ROI es claro','No hay presupuesto disponible este año','Prefiero no responder'],
     conditionalBudgetField: 0
   },
   {
-    // ★ REFORMULADA: pregunta de intención de contacto
     id:'Q12', title:'¿Quieres que alguien de FraudEG te contacte?',
     type:'contact-intent', required:true,
     options:[
@@ -576,7 +589,6 @@ function selectSingle(stepIdx, optIdx) {
   if (q.autoAdvance && !shouldPause) setTimeout(() => goNext(), 400);
 }
 
-// ★ NUEVO: Handler para Q12 con 3 flujos según intención
 function selectContactIntent(stepIdx, optIdx) {
   const q = currentFlow[stepIdx];
   answers[q.id] = { value: q.options[optIdx], index: optIdx };
@@ -589,7 +601,6 @@ function selectContactIntent(stepIdx, optIdx) {
   const phoneGroup = document.getElementById(`phoneGroup-${stepIdx}`);
 
   if (optIdx === 0) {
-    // Sí — formulario completo con teléfono
     form.classList.add('visible');
     label.textContent = 'Para que te contactemos, necesitamos algunos datos';
     phoneGroup.style.display = 'block';
@@ -597,7 +608,6 @@ function selectContactIntent(stepIdx, optIdx) {
     submitBtn.textContent = 'Enviar ✓';
     setTimeout(() => document.getElementById('c-name').focus(), 300);
   } else if (optIdx === 1) {
-    // Solo resumen — sin teléfono
     form.classList.add('visible');
     label.textContent = 'Para enviarte el resumen, necesitamos tu nombre y correo';
     phoneGroup.style.display = 'none';
@@ -605,19 +615,21 @@ function selectContactIntent(stepIdx, optIdx) {
     submitBtn.textContent = 'Enviar ✓';
     setTimeout(() => document.getElementById('c-name').focus(), 300);
   } else {
-    // No — envío anónimo directo
     form.classList.remove('visible');
     submitBtn.style.display = 'inline-block';
     submitBtn.textContent = 'Finalizar ✓';
   }
 }
 
+// ★ MEJORADO V1.2.1: Auto-avance al llegar al máximo
 function toggleMulti(stepIdx, optIdx) {
   const q = currentFlow[stepIdx];
   if (!answers[q.id]) answers[q.id] = { values: [], indices: [] };
   const ans = answers[q.id];
   const el = document.querySelector(`#opts-${stepIdx} .opt-check[data-idx="${optIdx}"]`);
-  if (el.classList.contains('selected')) {
+  const wasSelected = el.classList.contains('selected');
+
+  if (wasSelected) {
     el.classList.remove('selected');
     ans.indices = ans.indices.filter(i => i !== optIdx);
     ans.values = ans.indices.map(i => q.options[i]);
@@ -627,13 +639,32 @@ function toggleMulti(stepIdx, optIdx) {
     ans.indices.push(optIdx);
     ans.values = ans.indices.map(i => q.options[i]);
   }
+
+  // Actualizar hint de contador
   if (q.max < 99) {
     document.getElementById(`maxHint-${stepIdx}`).textContent = `${ans.indices.length} / ${q.max} seleccionadas`;
     document.getElementById(`opts-${stepIdx}`).classList.toggle('max-reached', ans.indices.length >= q.max);
   }
+
+  // Manejo de "Otro"
+  const otherIdx = q.hasOtherField ? q.options.length - 1 : -1;
+  const hasOtherSelected = otherIdx >= 0 && ans.indices.includes(otherIdx);
   if (q.hasOtherField) {
-    const otherIdx = q.options.length - 1;
-    document.getElementById(`other-${stepIdx}`).classList.toggle('visible', ans.indices.includes(otherIdx));
+    const otherEl = document.getElementById(`other-${stepIdx}`);
+    otherEl.classList.toggle('visible', hasOtherSelected);
+    if (hasOtherSelected && !wasSelected && optIdx === otherIdx) {
+      // Enfocar el campo cuando acaba de seleccionar "Otro"
+      setTimeout(() => document.getElementById(`otherInput-${stepIdx}`).focus(), 100);
+    }
+  }
+
+  // ★ AUTO-AVANCE: Si llegó al máximo y NO tiene "Otro" seleccionado
+  if (!wasSelected && q.max < 99 && ans.indices.length === q.max && !hasOtherSelected && !ans._autoAdvanced) {
+    ans._autoAdvanced = true;
+    showToast('✓ Avanzando…', 'success');
+    setTimeout(() => {
+      if (currentStep === stepIdx) goNext();
+    }, 900);
   }
 }
 
@@ -675,6 +706,9 @@ function goNext() {
 
 function goBack() {
   if (currentStep > 0) {
+    // Al ir atrás, resetear el flag de auto-advance para permitir que vuelva a disparar
+    const prevQ = currentFlow[currentStep - 1];
+    if (prevQ && answers[prevQ.id]) delete answers[prevQ.id]._autoAdvanced;
     if (currentStep === 2) currentStep = 1;
     else currentStep--;
     renderStep(currentStep);
@@ -719,12 +753,20 @@ function submitForm() {
   answers.Q12.contact = contactData;
   answers.Q12.intent = intent === 0 ? 'CONTACTAR' : intent === 1 ? 'SOLO_RESUMEN' : 'NO_CONTACTO';
 
+  // ★ Tiempo de llenado
+  const durationSeconds = Math.round((Date.now() - surveyStartTime) / 1000);
+  const durationMin = Math.floor(durationSeconds / 60);
+  const durationSec = durationSeconds % 60;
+  const durationDisplay = `${durationMin}:${String(durationSec).padStart(2, '0')}`;
+
   const payload = {
     timestamp: new Date().toISOString(),
     sector: selectedSector,
     responses: {},
     contact_intent: answers.Q12.intent,
-    contact: contactData
+    contact: contactData,
+    duration_seconds: durationSeconds,
+    duration_display: durationDisplay
   };
 
   for (const [key, val] of Object.entries(answers)) {
@@ -770,10 +812,15 @@ function updateProgress() {
   document.getElementById('progressPct').textContent = pct + '%';
 }
 
-function showToast(msg) {
+// ★ MEJORADO: toast con variante success
+function showToast(msg, variant) {
   const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2500);
+  t.textContent = msg;
+  t.classList.remove('success');
+  if (variant === 'success') t.classList.add('success');
+  t.classList.add('show');
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
 }
 
 renderStep(0);
