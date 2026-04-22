@@ -1,0 +1,1267 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FraudEG — Dashboard Analítico</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d1117;
+  --surface:#161b22;
+  --surface2:#21262d;
+  --border:#30363d;
+  --accent:#84CC16;
+  --accent-glow:rgba(132,204,22,.25);
+  --accent2:#65a30d;
+  --text:#f0f6fc;
+  --text-dim:#8b949e;
+  --text-muted:#6e7681;
+  --danger:#f85149;
+  --success:#2ea043;
+  --warning:#d29922;
+  --info:#4493f8;
+  --radius:12px;
+  --radius-sm:8px;
+  --font:'DM Sans',system-ui,sans-serif;
+  --mono:'Space Mono',monospace;
+}
+html{font-size:16px;scroll-behavior:smooth}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased;padding-bottom:60px}
+body::before{content:'';position:fixed;inset:0;z-index:0;background:radial-gradient(ellipse 80% 60% at 50% -10%,rgba(132,204,22,.05),transparent),linear-gradient(rgba(255,255,255,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.02) 1px,transparent 1px);background-size:100% 100%,60px 60px,60px 60px;pointer-events:none}
+
+.app{position:relative;z-index:1;max-width:1400px;margin:0 auto;padding:24px 24px 60px}
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:32px;flex-wrap:wrap;gap:16px}
+.brand{display:flex;align-items:center;gap:12px}
+.logo{font-size:1.5rem;font-weight:700;letter-spacing:-.5px}
+.logo .fraud{color:#fff}
+.logo .eg{color:var(--accent)}
+.subtitle{color:var(--text-dim);font-size:.8rem;font-family:var(--mono);letter-spacing:.5px;padding-left:12px;border-left:1px solid var(--border)}
+.actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.btn{padding:10px 18px;border-radius:var(--radius-sm);font-family:var(--font);font-size:.88rem;font-weight:600;cursor:pointer;transition:all .2s;border:none;letter-spacing:.2px;display:inline-flex;align-items:center;gap:8px}
+.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#000;box-shadow:0 2px 12px var(--accent-glow)}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 18px rgba(132,204,22,.35)}
+.btn-ghost{background:transparent;color:var(--text-dim);border:1px solid var(--border)}
+.btn-ghost:hover{border-color:var(--accent);color:var(--text)}
+.btn:disabled{opacity:.4;pointer-events:none}
+
+.connection-status{font-size:.72rem;font-family:var(--mono);color:var(--text-muted);display:flex;align-items:center;gap:6px}
+.status-dot{width:8px;height:8px;border-radius:50%;background:var(--text-muted)}
+.status-dot.live{background:var(--success);box-shadow:0 0 8px var(--success)}
+.status-dot.error{background:var(--danger)}
+
+.filters{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:24px;display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+.filters-label{color:var(--text-dim);font-size:.78rem;font-family:var(--mono);letter-spacing:1px;text-transform:uppercase}
+.filter-group{display:flex;flex-direction:column;gap:4px}
+.filter-group label{font-size:.7rem;color:var(--text-muted)}
+.filter-group select,.filter-group input{padding:8px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:var(--font);font-size:.85rem;outline:none}
+.filter-group select:focus,.filter-group input:focus{border-color:var(--accent)}
+
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:28px}
+.kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;position:relative;overflow:hidden}
+.kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--accent-bar,var(--accent))}
+.kpi-card.accent::before{background:linear-gradient(90deg,var(--accent),var(--accent2))}
+.kpi-card.hot::before{background:var(--danger)}
+.kpi-card.warm::before{background:var(--warning)}
+.kpi-card.cold::before{background:var(--info)}
+.kpi-label{font-size:.72rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:1.5px;font-family:var(--mono);margin-bottom:8px}
+.kpi-value{font-size:2rem;font-weight:700;line-height:1}
+.kpi-value.small{font-size:1.4rem}
+.kpi-sub{font-size:.72rem;color:var(--text-dim);margin-top:6px;font-family:var(--mono)}
+
+.section{margin-bottom:32px}
+.section-title{font-size:1.1rem;font-weight:600;margin-bottom:14px;color:var(--text);display:flex;align-items:center;gap:10px}
+.section-title::before{content:'';width:3px;height:18px;background:var(--accent);border-radius:2px}
+.section-hint{font-size:.8rem;color:var(--text-dim);margin-bottom:14px;font-style:italic}
+
+.chart-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(400px,1fr));gap:16px}
+.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px}
+.chart-card.full{grid-column:1/-1}
+.chart-title{font-size:.92rem;font-weight:500;margin-bottom:4px}
+.chart-sub{font-size:.72rem;color:var(--text-muted);margin-bottom:14px;font-family:var(--mono)}
+.chart-wrap{position:relative;height:280px}
+.chart-wrap.tall{height:340px}
+
+.pipeline-table{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.pipeline-table table{width:100%;border-collapse:collapse;font-size:.82rem}
+.pipeline-table th{background:var(--surface2);padding:12px 14px;text-align:left;font-weight:500;color:var(--text-dim);font-size:.72rem;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid var(--border)}
+.pipeline-table td{padding:12px 14px;border-bottom:1px solid var(--border)}
+.pipeline-table tr:last-child td{border-bottom:none}
+.pipeline-table tr:hover{background:rgba(132,204,22,.03)}
+.lead-badge{display:inline-block;padding:3px 10px;border-radius:99px;font-size:.68rem;font-weight:700;letter-spacing:.5px;font-family:var(--mono)}
+.lead-hot{background:rgba(248,81,73,.15);color:var(--danger);border:1px solid rgba(248,81,73,.3)}
+.lead-warm{background:rgba(210,153,34,.15);color:var(--warning);border:1px solid rgba(210,153,34,.3)}
+.lead-cold{background:rgba(68,147,248,.12);color:var(--info);border:1px solid rgba(68,147,248,.3)}
+.lead-anon{background:rgba(139,148,158,.12);color:var(--text-dim);border:1px solid var(--border)}
+
+.quality-flag{display:inline-block;padding:2px 8px;border-radius:99px;font-size:.65rem;font-weight:600;margin-right:4px;font-family:var(--mono)}
+.quality-issue{background:rgba(248,81,73,.15);color:var(--danger)}
+.quality-fast{background:rgba(210,153,34,.15);color:var(--warning)}
+.quality-ok{background:rgba(46,160,67,.12);color:var(--success)}
+
+.empty-state{text-align:center;padding:80px 20px;color:var(--text-dim)}
+.empty-state .icon{font-size:2.5rem;margin-bottom:16px;opacity:.5}
+.empty-state h2{font-size:1.2rem;font-weight:600;color:var(--text);margin-bottom:8px}
+
+.loading{text-align:center;padding:60px 20px;color:var(--text-dim)}
+.spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.pdf-overlay{position:fixed;inset:0;background:rgba(13,17,23,.9);display:none;align-items:center;justify-content:center;z-index:1000;backdrop-filter:blur(4px)}
+.pdf-overlay.visible{display:flex}
+.pdf-overlay .box{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:32px;text-align:center}
+.pdf-overlay .box p{color:var(--text-dim);margin-top:14px}
+
+.toast{position:fixed;bottom:24px;right:24px;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:12px 20px;border-radius:var(--radius-sm);font-size:.85rem;opacity:0;transform:translateX(20px);transition:all .3s;z-index:999;pointer-events:none;box-shadow:0 8px 24px rgba(0,0,0,.3)}
+.toast.show{opacity:1;transform:translateX(0)}
+.toast.success{border-color:var(--success)}
+.toast.error{border-color:var(--danger)}
+
+.eaas-segments{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px}
+.eaas-seg{padding:14px;background:var(--surface2);border-radius:var(--radius-sm);text-align:center}
+.eaas-seg .n{font-size:1.6rem;font-weight:700;color:var(--accent)}
+.eaas-seg .l{font-size:.7rem;color:var(--text-dim);font-family:var(--mono);margin-top:4px;text-transform:uppercase;letter-spacing:.5px}
+
+.quote-box{background:var(--surface2);border-left:3px solid var(--accent);padding:12px 14px;margin:8px 0;border-radius:0 var(--radius-sm) var(--radius-sm) 0;font-size:.85rem;color:var(--text-dim);font-style:italic;line-height:1.55}
+.quote-meta{font-size:.7rem;color:var(--text-muted);margin-top:6px;font-style:normal;font-family:var(--mono)}
+
+@media(max-width:768px){
+  .app{padding:16px}
+  .kpi-value{font-size:1.5rem}
+  .chart-grid{grid-template-columns:1fr}
+  .pipeline-table{overflow-x:auto}
+  .pipeline-table table{min-width:640px}
+}
+</style>
+</head>
+<body>
+
+<div class="app" id="app">
+  <div class="topbar">
+    <div class="brand">
+      <div class="logo"><span class="fraud">Fraud</span><span class="eg">EG</span></div>
+      <div class="subtitle">DASHBOARD ANALÍTICO · ESTUDIO DE MERCADO 2026</div>
+    </div>
+    <div class="actions">
+      <span class="connection-status" id="connStatus">
+        <span class="status-dot" id="statusDot"></span>
+        <span id="statusText">conectando…</span>
+      </span>
+      <button class="btn btn-ghost" id="refreshBtn" onclick="loadData()">↻ Actualizar</button>
+      <button class="btn btn-primary" id="pdfBtn" onclick="generatePDF()" disabled>📄 Exportar PDF</button>
+    </div>
+  </div>
+
+  <div id="content">
+    <div class="loading">
+      <div class="spinner"></div>
+      <p>Cargando respuestas…</p>
+    </div>
+  </div>
+</div>
+
+<div class="pdf-overlay" id="pdfOverlay">
+  <div class="box">
+    <div class="spinner"></div>
+    <p>Generando reporte PDF…</p>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ════════════════════════════════════════════════════════════
+// FraudEG Dashboard V1.0
+// ════════════════════════════════════════════════════════════
+
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzraWiELDN2ZH-HVDEaOPrYPtdxHLkOdxQ0CN0bmUt4YSBTLHs3_RGHvmJI-qP81aMrpQ/exec';
+const DASHBOARD_TOKEN = 'FraudEG2026_Dashboard_7k9m';
+
+let allData = [];
+let filteredData = [];
+let charts = {};
+let lastLoad = null;
+
+// ════════════════════════════════════════════════════════════
+// DATA LOADING
+// ════════════════════════════════════════════════════════════
+async function loadData() {
+  setStatus('loading', 'cargando…');
+  try {
+    const url = `${APPS_SCRIPT_URL}?action=data&token=${DASHBOARD_TOKEN}&t=${Date.now()}`;
+    const res = await fetch(url);
+    const payload = await res.json();
+
+    if (payload.status !== 'ok') {
+      throw new Error(payload.message || 'Error desconocido');
+    }
+
+    allData = payload.data || [];
+    filteredData = [...allData];
+    lastLoad = new Date();
+
+    setStatus('live', `${allData.length} respuestas · actualizado ${formatTime(lastLoad)}`);
+
+    if (allData.length === 0) {
+      renderEmpty();
+    } else {
+      renderAll();
+      document.getElementById('pdfBtn').disabled = false;
+    }
+  } catch (err) {
+    console.error(err);
+    setStatus('error', 'error de conexión');
+    renderError(err.message);
+  }
+}
+
+function setStatus(type, text) {
+  const dot = document.getElementById('statusDot');
+  const txt = document.getElementById('statusText');
+  dot.className = 'status-dot ' + (type === 'live' ? 'live' : type === 'error' ? 'error' : '');
+  txt.textContent = text;
+}
+
+function formatTime(d) {
+  return d.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
+}
+
+function renderEmpty() {
+  document.getElementById('content').innerHTML = `
+    <div class="empty-state">
+      <div class="icon">📊</div>
+      <h2>Sin respuestas todavía</h2>
+      <p>Cuando lleguen las primeras respuestas aparecerán aquí automáticamente.</p>
+    </div>`;
+}
+
+function renderError(msg) {
+  document.getElementById('content').innerHTML = `
+    <div class="empty-state">
+      <div class="icon">⚠</div>
+      <h2>No se pudo cargar</h2>
+      <p style="color:var(--danger);font-family:var(--mono);font-size:.8rem;margin-top:8px">${msg}</p>
+      <button class="btn btn-primary" style="margin-top:20px" onclick="loadData()">↻ Reintentar</button>
+    </div>`;
+}
+
+// ════════════════════════════════════════════════════════════
+// LEAD SCORING
+// ════════════════════════════════════════════════════════════
+function calcLeadScore(row) {
+  const q09 = (row.Q09_Satisfaccion || '').toLowerCase();
+  const q10 = (row.Q10_Cambio_Proveedor || '').toLowerCase();
+  const q11 = (row.Q11_Presupuesto || '').toLowerCase();
+  const intent = row.Q12_Intencion_Contacto || '';
+
+  let score = 0;
+  if (q09.includes('insatisfecho')) score += 3;
+  else if (q09.includes('regular')) score += 2;
+  else if (q09.includes('no tenemos')) score += 2;
+
+  if (q10.startsWith('sí') || q10.startsWith('si')) score += 3;
+  else if (q10.includes('tal vez')) score += 1;
+
+  if (q11.includes('asignado')) score += 2;
+  else if (q11.includes('roi')) score += 1;
+
+  if (intent === 'CONTACTAR') score += 2;
+  else if (intent === 'SOLO_RESUMEN') score += 1;
+
+  return Math.min(score, 10);
+}
+
+function classifyLead(row) {
+  const intent = row.Q12_Intencion_Contacto || '';
+  if (intent === 'NO_CONTACTO') return 'ANON';
+  const score = calcLeadScore(row);
+  if (score >= 7) return 'HOT';
+  if (score >= 4) return 'WARM';
+  return 'COLD';
+}
+
+function classifyQuality(row) {
+  const issues = [];
+  const durSec = Number(row.Duracion_Segundos) || 0;
+
+  if (durSec > 0 && durSec < 120) issues.push({ type:'fast', label:'muy rápido' });
+
+  // Count empty required fields
+  const requiredFields = ['Q01_Rol','Q02_Sector','Q03_Problema_Principal','Q04_Impacto','Q06_Capacidad_Faltante','Q07_Mejora_Unica','Q07B_Perdidas_USD','Q07C_Riesgo_Compartido','Q07D_EaaS_Custodia','Q09_Satisfaccion','Q10_Cambio_Proveedor','Q11_Presupuesto'];
+  let empties = 0;
+  requiredFields.forEach(f => { if (!row[f] || String(row[f]).trim() === '') empties++; });
+  if (empties >= 3) issues.push({ type:'issue', label:`${empties} campos vacíos` });
+  else if (empties >= 1) issues.push({ type:'issue', label:`${empties} vacío${empties>1?'s':''}` });
+
+  // Q08 empty (soft signal)
+  if (!row.Q08_Solucion_Ideal || String(row.Q08_Solucion_Ideal).trim() === '') {
+    issues.push({ type:'issue', label:'Q08 vacía' });
+  }
+
+  if (issues.length === 0) return [{ type:'ok', label:'ok' }];
+  return issues;
+}
+
+function classifyEaaS(q07d) {
+  const s = (q07d || '').toLowerCase();
+  if (s.includes('muy interesado')) return 'muy_interesado';
+  if (s.includes('interesado')) return 'interesado';
+  if (s.includes('tal vez')) return 'tal_vez';
+  if (s.includes('poco viable')) return 'poco_viable';
+  if (s.includes('no aplicable')) return 'no_aplicable';
+  return 'sin_dato';
+}
+
+function sectorLabel(sector) {
+  const map = { 'fintech':'Fintech/Banca', 'retail':'Retail', 'marketplace':'Marketplace', 'otro':'Otro' };
+  return map[sector] || sector || '—';
+}
+
+// ════════════════════════════════════════════════════════════
+// FILTERS
+// ════════════════════════════════════════════════════════════
+function applyFilters() {
+  const sector = document.getElementById('filterSector').value;
+  const pais = document.getElementById('filterPais').value;
+  const lead = document.getElementById('filterLead').value;
+
+  filteredData = allData.filter(row => {
+    if (sector !== 'all' && row.Sector !== sector) return false;
+    if (pais !== 'all' && (row.Pais || '—') !== pais) return false;
+    if (lead !== 'all' && classifyLead(row) !== lead) return false;
+    return true;
+  });
+  renderAll(true);
+}
+
+// ════════════════════════════════════════════════════════════
+// MAIN RENDER
+// ════════════════════════════════════════════════════════════
+function renderAll(isFilter) {
+  if (!isFilter) {
+    document.getElementById('content').innerHTML = buildShell();
+  }
+  renderKPIs();
+  renderFilters();
+  renderCharts();
+  renderPipelineTable();
+  renderQualityTable();
+  renderTemporal();
+}
+
+function buildShell() {
+  return `
+    <div class="filters" id="filtersBar"></div>
+    <div class="kpi-grid" id="kpis"></div>
+
+    <div class="section" id="secEaaS">
+      <h2 class="section-title">Señales EaaS · Custodia preventiva</h2>
+      <div class="section-hint">Validación de hipótesis de Exchange-as-a-Service end-to-end</div>
+      <div class="chart-grid">
+        <div class="chart-card">
+          <div class="chart-title">Apetito por custodia preventiva (Q07D)</div>
+          <div class="chart-sub">Distribución de respuestas</div>
+          <div class="chart-wrap"><canvas id="chartEaaS"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Gap de mercado: riesgo compartido actual (Q07C)</div>
+          <div class="chart-sub">¿Tu proveedor actual comparte riesgo?</div>
+          <div class="chart-wrap"><canvas id="chartRisk"></canvas></div>
+        </div>
+      </div>
+      <div class="chart-card full" style="margin-top:16px">
+        <div class="chart-title">Segmentación EaaS por sector</div>
+        <div class="chart-sub">Quién asume 100% del riesgo Y dice estar interesado en custodia = lead potencial</div>
+        <div class="chart-wrap"><canvas id="chartEaaSCross"></canvas></div>
+      </div>
+    </div>
+
+    <div class="section" id="secMarket">
+      <h2 class="section-title">Validación de mercado · Cruces estratégicos</h2>
+      <div class="section-hint">Data citable para deck VC</div>
+      <div class="chart-grid">
+        <div class="chart-card">
+          <div class="chart-title">Pérdidas anuales por fraude (Q07B)</div>
+          <div class="chart-sub">Dimensionamiento del mercado</div>
+          <div class="chart-wrap"><canvas id="chartLoss"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Satisfacción actual (Q09)</div>
+          <div class="chart-sub">% insatisfechos = oportunidad de desplazamiento</div>
+          <div class="chart-wrap"><canvas id="chartSat"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Intención de cambio (Q10)</div>
+          <div class="chart-sub">Switching intent — pipeline potencial</div>
+          <div class="chart-wrap"><canvas id="chartSwitch"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Presupuesto disponible (Q11)</div>
+          <div class="chart-sub">Capacidad de compra del mercado</div>
+          <div class="chart-wrap"><canvas id="chartBudget"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section" id="secPipeline">
+      <h2 class="section-title">Pipeline comercial</h2>
+      <div class="section-hint">Leads priorizados por intención y señales de compra</div>
+      <div class="pipeline-table" id="pipelineTable"></div>
+    </div>
+
+    <div class="section" id="secTemporal">
+      <h2 class="section-title">Evolución temporal</h2>
+      <div class="section-hint">Tasa de llegada de respuestas</div>
+      <div class="chart-card full">
+        <div class="chart-wrap tall"><canvas id="chartTime"></canvas></div>
+      </div>
+    </div>
+
+    <div class="section" id="secQuality">
+      <h2 class="section-title">Calidad de respuestas</h2>
+      <div class="section-hint">Detecta respuestas superficiales, campos vacíos o llenado apresurado</div>
+      <div class="chart-grid" style="margin-bottom:16px">
+        <div class="chart-card">
+          <div class="chart-title">Distribución de tiempo de llenado</div>
+          <div class="chart-sub">Mediana ideal: 5-10 min</div>
+          <div class="chart-wrap"><canvas id="chartDuration"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Respuestas con issues de calidad</div>
+          <div class="chart-sub">Banderas para revisar</div>
+          <div class="chart-wrap"><canvas id="chartQuality"></canvas></div>
+        </div>
+      </div>
+      <div class="pipeline-table" id="qualityTable"></div>
+    </div>
+  `;
+}
+
+function renderFilters() {
+  const sectors = [...new Set(allData.map(r => r.Sector).filter(Boolean))];
+  const paises = [...new Set(allData.map(r => r.Pais).filter(Boolean))];
+
+  const filterSectorVal = document.getElementById('filterSector')?.value || 'all';
+  const filterPaisVal = document.getElementById('filterPais')?.value || 'all';
+  const filterLeadVal = document.getElementById('filterLead')?.value || 'all';
+
+  document.getElementById('filtersBar').innerHTML = `
+    <span class="filters-label">FILTROS</span>
+    <div class="filter-group">
+      <label>Sector</label>
+      <select id="filterSector" onchange="applyFilters()">
+        <option value="all">Todos</option>
+        ${sectors.map(s => `<option value="${s}" ${s===filterSectorVal?'selected':''}>${sectorLabel(s)}</option>`).join('')}
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>País</label>
+      <select id="filterPais" onchange="applyFilters()">
+        <option value="all">Todos</option>
+        ${paises.map(p => `<option value="${p}" ${p===filterPaisVal?'selected':''}>${p}</option>`).join('')}
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Tipo de lead</label>
+      <select id="filterLead" onchange="applyFilters()">
+        <option value="all" ${filterLeadVal==='all'?'selected':''}>Todos</option>
+        <option value="HOT" ${filterLeadVal==='HOT'?'selected':''}>🔥 Hot</option>
+        <option value="WARM" ${filterLeadVal==='WARM'?'selected':''}>🟡 Warm</option>
+        <option value="COLD" ${filterLeadVal==='COLD'?'selected':''}>🔵 Cold</option>
+        <option value="ANON" ${filterLeadVal==='ANON'?'selected':''}>📊 Anónimo</option>
+      </select>
+    </div>
+    <div class="filter-group" style="margin-left:auto">
+      <label>Respuestas visibles</label>
+      <div style="font-size:1rem;font-weight:600;color:var(--accent);font-family:var(--mono)">${filteredData.length} / ${allData.length}</div>
+    </div>
+  `;
+}
+
+// ════════════════════════════════════════════════════════════
+// KPIs
+// ════════════════════════════════════════════════════════════
+function renderKPIs() {
+  const d = filteredData;
+  const total = d.length;
+  const byLead = { HOT:0, WARM:0, COLD:0, ANON:0 };
+  d.forEach(r => byLead[classifyLead(r)]++);
+
+  const eaasPositive = d.filter(r => {
+    const c = classifyEaaS(r.Q07D_EaaS_Custodia);
+    return c === 'muy_interesado' || c === 'interesado';
+  }).length;
+
+  const riskOnUs = d.filter(r => (r.Q07C_Riesgo_Compartido || '').toLowerCase().includes('100% nuestro')).length;
+
+  const durations = d.map(r => Number(r.Duracion_Segundos) || 0).filter(x => x > 0).sort((a,b)=>a-b);
+  const mediana = durations.length > 0 ? durations[Math.floor(durations.length/2)] : 0;
+  const medMin = Math.floor(mediana/60);
+  const medSec = mediana % 60;
+
+  const withIssues = d.filter(r => {
+    const q = classifyQuality(r);
+    return q.some(x => x.type !== 'ok');
+  }).length;
+
+  const pct = (n) => total > 0 ? Math.round(n/total*100) : 0;
+
+  document.getElementById('kpis').innerHTML = `
+    <div class="kpi-card accent">
+      <div class="kpi-label">Respuestas</div>
+      <div class="kpi-value">${total}</div>
+      <div class="kpi-sub">${allData.length} totales</div>
+    </div>
+    <div class="kpi-card hot">
+      <div class="kpi-label">🔥 Hot leads</div>
+      <div class="kpi-value">${byLead.HOT}</div>
+      <div class="kpi-sub">${pct(byLead.HOT)}% del total</div>
+    </div>
+    <div class="kpi-card warm">
+      <div class="kpi-label">🟡 Warm leads</div>
+      <div class="kpi-value">${byLead.WARM}</div>
+      <div class="kpi-sub">${pct(byLead.WARM)}%</div>
+    </div>
+    <div class="kpi-card cold">
+      <div class="kpi-label">Interesados en EaaS</div>
+      <div class="kpi-value">${eaasPositive}</div>
+      <div class="kpi-sub">${pct(eaasPositive)}% apetito</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Asumen 100% riesgo</div>
+      <div class="kpi-value">${riskOnUs}</div>
+      <div class="kpi-sub">${pct(riskOnUs)}% gap de mercado</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Tiempo mediana</div>
+      <div class="kpi-value small">${medMin}:${String(medSec).padStart(2,'0')}</div>
+      <div class="kpi-sub">min:seg</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Con issues</div>
+      <div class="kpi-value">${withIssues}</div>
+      <div class="kpi-sub">${pct(withIssues)}% a revisar</div>
+    </div>
+  `;
+}
+
+// ════════════════════════════════════════════════════════════
+// CHARTS
+// ════════════════════════════════════════════════════════════
+const CHART_DEFAULTS = {
+  font: { family:'DM Sans' },
+  color: '#8b949e',
+  gridColor: 'rgba(139,148,158,.12)'
+};
+
+Chart.defaults.font.family = 'DM Sans';
+Chart.defaults.color = '#8b949e';
+Chart.defaults.plugins.legend.labels.color = '#f0f6fc';
+Chart.defaults.plugins.legend.labels.font = { size: 11, family: 'DM Sans' };
+
+function destroyChart(id) {
+  if (charts[id]) { charts[id].destroy(); delete charts[id]; }
+}
+
+function renderCharts() {
+  renderChartEaaS();
+  renderChartRisk();
+  renderChartEaaSCross();
+  renderChartLoss();
+  renderChartSat();
+  renderChartSwitch();
+  renderChartBudget();
+  renderChartDuration();
+  renderChartQuality();
+}
+
+function renderChartEaaS() {
+  destroyChart('chartEaaS');
+  const ctx = document.getElementById('chartEaaS');
+  if (!ctx) return;
+  const counts = { muy_interesado:0, interesado:0, tal_vez:0, poco_viable:0, no_aplicable:0, sin_dato:0 };
+  filteredData.forEach(r => counts[classifyEaaS(r.Q07D_EaaS_Custodia)]++);
+  charts.chartEaaS = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['Muy interesado','Interesado\ncondicional','Tal vez','Poco viable','No aplicable','Sin dato'],
+      datasets: [{
+        label: 'Respuestas',
+        data: [counts.muy_interesado, counts.interesado, counts.tal_vez, counts.poco_viable, counts.no_aplicable, counts.sin_dato],
+        backgroundColor: ['#84CC16','#a3dd3a','#d29922','#f85149','#8b949e','#30363d'],
+        borderWidth: 0
+      }]
+    },
+    options: {
+      indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: CHART_DEFAULTS.gridColor } },
+        y: { grid: { display: false }, ticks: { font: { size: 11 } } }
+      }
+    }
+  });
+}
+
+function renderChartRisk() {
+  destroyChart('chartRisk');
+  const ctx = document.getElementById('chartRisk');
+  if (!ctx) return;
+  const counts = { si:0, no:0, parcial:0, nose:0, sin:0 };
+  filteredData.forEach(r => {
+    const v = (r.Q07C_Riesgo_Compartido || '').toLowerCase();
+    if (v.includes('sí') || v.startsWith('si —') || v.startsWith('si -')) counts.si++;
+    else if (v.includes('100% nuestro') || v.startsWith('no —') || v.startsWith('no -')) counts.no++;
+    else if (v.includes('parcialmente')) counts.parcial++;
+    else if (v.includes('no lo sé') || v.includes('no lo se')) counts.nose++;
+    else counts.sin++;
+  });
+  charts.chartRisk = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Sí tiene garantía','No — 100% nuestro','Parcialmente','No lo sé','Sin dato'].filter((_,i)=>[counts.si,counts.no,counts.parcial,counts.nose,counts.sin][i]>0),
+      datasets: [{
+        data: [counts.si, counts.no, counts.parcial, counts.nose, counts.sin].filter(x=>x>0),
+        backgroundColor: ['#84CC16','#f85149','#d29922','#4493f8','#30363d'],
+        borderWidth: 2, borderColor: '#161b22'
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'right', labels: { boxWidth: 10, padding: 10 } } }
+    }
+  });
+}
+
+function renderChartEaaSCross() {
+  destroyChart('chartEaaSCross');
+  const ctx = document.getElementById('chartEaaSCross');
+  if (!ctx) return;
+  const sectors = ['fintech','retail','marketplace','otro'];
+  const data = sectors.map(sec => {
+    const bySector = filteredData.filter(r => r.Sector === sec);
+    const interested = bySector.filter(r => {
+      const c = classifyEaaS(r.Q07D_EaaS_Custodia);
+      return c === 'muy_interesado' || c === 'interesado';
+    }).length;
+    const notInterested = bySector.length - interested;
+    return { sector: sec, interested, notInterested };
+  }).filter(x => x.interested + x.notInterested > 0);
+
+  charts.chartEaaSCross = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: data.map(x => sectorLabel(x.sector)),
+      datasets: [
+        { label: 'Interesados en EaaS', data: data.map(x=>x.interested), backgroundColor: '#84CC16' },
+        { label: 'No interesados / sin dato', data: data.map(x=>x.notInterested), backgroundColor: '#30363d' }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      scales: {
+        x: { stacked: true, grid: { display: false } },
+        y: { stacked: true, beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: CHART_DEFAULTS.gridColor } }
+      }
+    }
+  });
+}
+
+function renderChartLoss() {
+  destroyChart('chartLoss');
+  const ctx = document.getElementById('chartLoss');
+  if (!ctx) return;
+  const buckets = { '<50K':0, '50-200K':0, '200K-1M':0, '+1M':0, 'No miden':0, 'No responde':0 };
+  filteredData.forEach(r => {
+    const v = (r.Q07B_Perdidas_USD || '').toLowerCase();
+    if (v.includes('menos de')) buckets['<50K']++;
+    else if (v.includes('50,000 — $200')) buckets['50-200K']++;
+    else if (v.includes('200,000 — $1')) buckets['200K-1M']++;
+    else if (v.includes('más de usd') || v.includes('mas de usd')) buckets['+1M']++;
+    else if (v.includes('no tenemos')) buckets['No miden']++;
+    else if (v.includes('prefiero no')) buckets['No responde']++;
+  });
+  charts.chartLoss = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: Object.keys(buckets),
+      datasets: [{ label: 'Empresas', data: Object.values(buckets), backgroundColor: '#84CC16', borderWidth:0 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+        y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: CHART_DEFAULTS.gridColor } }
+      }
+    }
+  });
+}
+
+function renderChartSat() {
+  destroyChart('chartSat');
+  const ctx = document.getElementById('chartSat');
+  if (!ctx) return;
+  const buckets = { 'Muy satisfecho':0, 'Satisfecho c/brechas':0, 'Regular':0, 'Insatisfecho':0, 'Sin solución':0 };
+  filteredData.forEach(r => {
+    const v = (r.Q09_Satisfaccion || '').toLowerCase();
+    if (v.includes('muy satisfecho')) buckets['Muy satisfecho']++;
+    else if (v.includes('satisfecho')) buckets['Satisfecho c/brechas']++;
+    else if (v.includes('regular')) buckets['Regular']++;
+    else if (v.includes('insatisfecho')) buckets['Insatisfecho']++;
+    else if (v.includes('no tenemos')) buckets['Sin solución']++;
+  });
+  charts.chartSat = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: Object.keys(buckets),
+      datasets: [{ data: Object.values(buckets), backgroundColor: ['#2ea043','#84CC16','#d29922','#f85149','#4493f8'], borderWidth:0 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: CHART_DEFAULTS.gridColor } },
+        y: { grid: { display: false }, ticks: { font: { size: 11 } } }
+      }
+    }
+  });
+}
+
+function renderChartSwitch() {
+  destroyChart('chartSwitch');
+  const ctx = document.getElementById('chartSwitch');
+  if (!ctx) return;
+  const buckets = { 'Sí':0, 'Tal vez':0, 'No':0 };
+  filteredData.forEach(r => {
+    const v = (r.Q10_Cambio_Proveedor || '').toLowerCase();
+    if (v.startsWith('sí') || v.startsWith('si')) buckets['Sí']++;
+    else if (v.includes('tal vez')) buckets['Tal vez']++;
+    else if (v.startsWith('no')) buckets['No']++;
+  });
+  charts.chartSwitch = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: Object.keys(buckets).filter(k => buckets[k] > 0),
+      datasets: [{
+        data: Object.values(buckets).filter(x => x > 0),
+        backgroundColor: ['#84CC16','#d29922','#8b949e'],
+        borderWidth: 2, borderColor: '#161b22'
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'right', labels: { boxWidth: 10 } } }
+    }
+  });
+}
+
+function renderChartBudget() {
+  destroyChart('chartBudget');
+  const ctx = document.getElementById('chartBudget');
+  if (!ctx) return;
+  const buckets = { 'Asignado':0, 'ROI justificable':0, 'No hay':0, 'No responde':0 };
+  filteredData.forEach(r => {
+    const v = (r.Q11_Presupuesto || '').toLowerCase();
+    if (v.includes('asignado')) buckets['Asignado']++;
+    else if (v.includes('roi')) buckets['ROI justificable']++;
+    else if (v.includes('no hay')) buckets['No hay']++;
+    else if (v.includes('prefiero no')) buckets['No responde']++;
+  });
+  charts.chartBudget = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: Object.keys(buckets),
+      datasets: [{ data: Object.values(buckets), backgroundColor: ['#84CC16','#d29922','#f85149','#8b949e'], borderWidth:0 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+        y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: CHART_DEFAULTS.gridColor } }
+      }
+    }
+  });
+}
+
+function renderChartDuration() {
+  destroyChart('chartDuration');
+  const ctx = document.getElementById('chartDuration');
+  if (!ctx) return;
+  const buckets = { '<2m':0, '2-5m':0, '5-10m':0, '10-15m':0, '+15m':0 };
+  filteredData.forEach(r => {
+    const s = Number(r.Duracion_Segundos) || 0;
+    if (s === 0) return;
+    if (s < 120) buckets['<2m']++;
+    else if (s < 300) buckets['2-5m']++;
+    else if (s < 600) buckets['5-10m']++;
+    else if (s < 900) buckets['10-15m']++;
+    else buckets['+15m']++;
+  });
+  charts.chartDuration = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: Object.keys(buckets),
+      datasets: [{ data: Object.values(buckets), backgroundColor: ['#f85149','#d29922','#84CC16','#84CC16','#d29922'], borderWidth:0 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { display: false } },
+        y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: CHART_DEFAULTS.gridColor } }
+      }
+    }
+  });
+}
+
+function renderChartQuality() {
+  destroyChart('chartQuality');
+  const ctx = document.getElementById('chartQuality');
+  if (!ctx) return;
+  let ok = 0, fast = 0, empty = 0, bothIssues = 0;
+  filteredData.forEach(r => {
+    const issues = classifyQuality(r);
+    const hasFast = issues.some(x => x.type === 'fast');
+    const hasEmpty = issues.some(x => x.type === 'issue');
+    if (!hasFast && !hasEmpty) ok++;
+    else if (hasFast && hasEmpty) bothIssues++;
+    else if (hasFast) fast++;
+    else empty++;
+  });
+  charts.chartQuality = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['OK','Muy rápido','Campos vacíos','Ambos'].filter((_,i)=>[ok,fast,empty,bothIssues][i]>0),
+      datasets: [{
+        data: [ok, fast, empty, bothIssues].filter(x=>x>0),
+        backgroundColor: ['#2ea043','#d29922','#f85149','#a32d2d'],
+        borderWidth: 2, borderColor: '#161b22'
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'right', labels: { boxWidth: 10, padding: 10 } } }
+    }
+  });
+}
+
+// ════════════════════════════════════════════════════════════
+// PIPELINE TABLE
+// ════════════════════════════════════════════════════════════
+function renderPipelineTable() {
+  const sorted = [...filteredData].sort((a,b) => calcLeadScore(b) - calcLeadScore(a));
+  const visible = sorted.filter(r => classifyLead(r) !== 'ANON');
+  if (visible.length === 0) {
+    document.getElementById('pipelineTable').innerHTML = `
+      <div style="padding:40px;text-align:center;color:var(--text-dim)">
+        Sin leads identificados en el filtro actual. Ajusta los filtros para ver más respuestas.
+      </div>`;
+    return;
+  }
+  document.getElementById('pipelineTable').innerHTML = `
+    <table>
+      <thead>
+        <tr>
+          <th>Lead</th>
+          <th>Nombre</th>
+          <th>Empresa</th>
+          <th>Sector</th>
+          <th>País</th>
+          <th>Score</th>
+          <th>EaaS</th>
+          <th>Contacto</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${visible.map(r => {
+          const lead = classifyLead(r);
+          const score = calcLeadScore(r);
+          const eaasC = classifyEaaS(r.Q07D_EaaS_Custodia);
+          const eaasIcon = eaasC === 'muy_interesado' ? '💎' : eaasC === 'interesado' ? '✓' : eaasC === 'tal_vez' ? '?' : '—';
+          const leadClass = `lead-${lead.toLowerCase()}`;
+          return `
+            <tr>
+              <td><span class="lead-badge ${leadClass}">${lead}</span></td>
+              <td>${r.Nombre || '—'}</td>
+              <td>${r.Empresa || '—'}</td>
+              <td>${sectorLabel(r.Sector)}</td>
+              <td>${r.Pais || '—'}</td>
+              <td style="font-family:var(--mono);font-weight:700">${score}/10</td>
+              <td style="text-align:center">${eaasIcon}</td>
+              <td style="font-size:.78rem;color:var(--text-dim)">${r.Email || '—'}</td>
+            </tr>`;
+        }).join('')}
+      </tbody>
+    </table>`;
+}
+
+// ════════════════════════════════════════════════════════════
+// QUALITY TABLE
+// ════════════════════════════════════════════════════════════
+function renderQualityTable() {
+  const withIssues = filteredData.filter(r => {
+    const q = classifyQuality(r);
+    return q.some(x => x.type !== 'ok');
+  });
+  if (withIssues.length === 0) {
+    document.getElementById('qualityTable').innerHTML = `
+      <div style="padding:30px;text-align:center;color:var(--success);font-size:.9rem">
+        ✓ Todas las respuestas pasan los controles de calidad
+      </div>`;
+    return;
+  }
+  document.getElementById('qualityTable').innerHTML = `
+    <table>
+      <thead>
+        <tr>
+          <th>Timestamp</th>
+          <th>Sector</th>
+          <th>Duración</th>
+          <th>Flags</th>
+          <th>Contacto</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${withIssues.map(r => {
+          const issues = classifyQuality(r);
+          return `
+            <tr>
+              <td style="font-family:var(--mono);font-size:.76rem">${formatDate(r.Timestamp)}</td>
+              <td>${sectorLabel(r.Sector)}</td>
+              <td style="font-family:var(--mono);font-size:.78rem">${r.Duracion_Llenado || '—'}</td>
+              <td>${issues.map(i => `<span class="quality-flag quality-${i.type}">${i.label}</span>`).join('')}</td>
+              <td style="font-size:.78rem;color:var(--text-dim)">${r.Email || '(anónimo)'}</td>
+            </tr>`;
+        }).join('')}
+      </tbody>
+    </table>`;
+}
+
+function formatDate(isoStr) {
+  try {
+    const d = new Date(isoStr);
+    return d.toLocaleString('es-CO', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' });
+  } catch(e) { return isoStr; }
+}
+
+// ════════════════════════════════════════════════════════════
+// TEMPORAL
+// ════════════════════════════════════════════════════════════
+function renderTemporal() {
+  destroyChart('chartTime');
+  const ctx = document.getElementById('chartTime');
+  if (!ctx) return;
+  const byDay = {};
+  filteredData.forEach(r => {
+    try {
+      const d = new Date(r.Timestamp);
+      const key = d.toISOString().slice(0, 10);
+      byDay[key] = (byDay[key] || 0) + 1;
+    } catch(e) {}
+  });
+  const sortedKeys = Object.keys(byDay).sort();
+  let cumulative = 0;
+  const cumData = sortedKeys.map(k => { cumulative += byDay[k]; return cumulative; });
+
+  charts.chartTime = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: sortedKeys.map(k => {
+        const d = new Date(k);
+        return d.toLocaleDateString('es-CO', { day:'2-digit', month:'short' });
+      }),
+      datasets: [
+        { type:'bar', label: 'Respuestas del día', data: sortedKeys.map(k=>byDay[k]), backgroundColor: '#84CC16', borderWidth:0, order:2 },
+        { type:'line', label: 'Acumulado', data: cumData, borderColor: '#4493f8', backgroundColor:'rgba(68,147,248,.1)', tension: .3, fill: true, yAxisID: 'y1', order:1 }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      scales: {
+        x: { grid: { display: false } },
+        y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: CHART_DEFAULTS.gridColor }, title: { display: true, text: 'Por día', color: '#8b949e' } },
+        y1: { beginAtZero: true, position: 'right', ticks: { stepSize: 1 }, grid: { display: false }, title: { display: true, text: 'Acumulado', color: '#8b949e' } }
+      }
+    }
+  });
+}
+
+// ════════════════════════════════════════════════════════════
+// PDF EXPORT
+// ════════════════════════════════════════════════════════════
+async function generatePDF() {
+  const overlay = document.getElementById('pdfOverlay');
+  overlay.classList.add('visible');
+
+  try {
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    const pageW = pdf.internal.pageSize.getWidth();
+    const pageH = pdf.internal.pageSize.getHeight();
+    const margin = 12;
+
+    // ── PÁGINA 1: Portada + KPIs ──
+    // Fondo oscuro
+    pdf.setFillColor(13, 17, 23);
+    pdf.rect(0, 0, pageW, pageH, 'F');
+
+    // Logo
+    pdf.setTextColor(255, 255, 255);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(28);
+    pdf.text('Fraud', margin, 28);
+    const fraudW = pdf.getTextWidth('Fraud');
+    pdf.setTextColor(132, 204, 22);
+    pdf.text('EG', margin + fraudW, 28);
+
+    // Subtítulo
+    pdf.setTextColor(139, 148, 158);
+    pdf.setFontSize(10);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text('REPORTE DE ESTUDIO DE MERCADO · LATAM 2026', margin, 36);
+
+    // Línea divisoria
+    pdf.setDrawColor(48, 54, 61);
+    pdf.setLineWidth(0.3);
+    pdf.line(margin, 42, pageW - margin, 42);
+
+    // Fecha + total
+    pdf.setTextColor(240, 246, 252);
+    pdf.setFontSize(9);
+    pdf.setFont('courier', 'normal');
+    const reportDate = new Date().toLocaleDateString('es-CO', { day:'2-digit', month:'long', year:'numeric' });
+    pdf.text(`Generado: ${reportDate}`, margin, 50);
+    pdf.text(`Respuestas analizadas: ${filteredData.length} de ${allData.length} totales`, margin, 56);
+
+    // KPIs grid
+    let y = 68;
+    pdf.setFontSize(14);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setTextColor(255, 255, 255);
+    pdf.text('Resumen ejecutivo', margin, y);
+    y += 10;
+
+    const d = filteredData;
+    const byLead = { HOT:0, WARM:0, COLD:0, ANON:0 };
+    d.forEach(r => byLead[classifyLead(r)]++);
+    const eaasPos = d.filter(r => { const c = classifyEaaS(r.Q07D_EaaS_Custodia); return c === 'muy_interesado' || c === 'interesado'; }).length;
+    const riskOnUs = d.filter(r => (r.Q07C_Riesgo_Compartido || '').toLowerCase().includes('100% nuestro')).length;
+    const total = d.length;
+    const pct = (n) => total > 0 ? Math.round(n/total*100) : 0;
+
+    const kpis = [
+      { label: 'Hot leads', value: byLead.HOT, sub: `${pct(byLead.HOT)}%`, color: [248,81,73] },
+      { label: 'Warm leads', value: byLead.WARM, sub: `${pct(byLead.WARM)}%`, color: [210,153,34] },
+      { label: 'Interesados EaaS', value: eaasPos, sub: `${pct(eaasPos)}%`, color: [132,204,22] },
+      { label: 'Asumen 100% riesgo', value: riskOnUs, sub: `${pct(riskOnUs)}%`, color: [132,204,22] }
+    ];
+
+    const boxW = (pageW - margin*2 - 12) / 4;
+    kpis.forEach((k, i) => {
+      const x = margin + i * (boxW + 4);
+      pdf.setFillColor(22, 27, 34);
+      pdf.roundedRect(x, y, boxW, 28, 2, 2, 'F');
+      pdf.setFillColor(...k.color);
+      pdf.rect(x, y, boxW, 1, 'F');
+      pdf.setTextColor(139, 148, 158);
+      pdf.setFontSize(7);
+      pdf.setFont('courier', 'normal');
+      pdf.text(k.label.toUpperCase(), x + 3, y + 6);
+      pdf.setTextColor(240, 246, 252);
+      pdf.setFontSize(18);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text(String(k.value), x + 3, y + 17);
+      pdf.setTextColor(139, 148, 158);
+      pdf.setFontSize(8);
+      pdf.setFont('courier', 'normal');
+      pdf.text(k.sub, x + 3, y + 24);
+    });
+
+    y += 36;
+
+    // Capturar charts como imágenes
+    const chartIds = [
+      { id:'chartEaaS', title:'Apetito por custodia preventiva (Q07D)', h: 55 },
+      { id:'chartRisk', title:'Gap de mercado: riesgo compartido actual', h: 55 }
+    ];
+
+    for (const c of chartIds) {
+      const canvas = document.getElementById(c.id);
+      if (!canvas) continue;
+      const imgData = canvas.toDataURL('image/png');
+      if (y + c.h + 10 > pageH - 12) { pdf.addPage(); pdf.setFillColor(13,17,23); pdf.rect(0,0,pageW,pageH,'F'); y = 16; }
+      pdf.setTextColor(240,246,252);
+      pdf.setFont('helvetica','bold');
+      pdf.setFontSize(10);
+      pdf.text(c.title, margin, y);
+      y += 4;
+      pdf.addImage(imgData, 'PNG', margin, y, pageW - margin*2, c.h);
+      y += c.h + 8;
+    }
+
+    // ── PÁGINA 2: Más gráficos + insights ──
+    pdf.addPage();
+    pdf.setFillColor(13, 17, 23);
+    pdf.rect(0, 0, pageW, pageH, 'F');
+    y = 16;
+
+    pdf.setTextColor(255,255,255);
+    pdf.setFont('helvetica','bold');
+    pdf.setFontSize(14);
+    pdf.text('Validación de mercado', margin, y);
+    y += 8;
+
+    const chartIds2 = [
+      { id:'chartLoss', title:'Pérdidas anuales por fraude (Q07B)', h: 48 },
+      { id:'chartSat', title:'Satisfacción con solución actual (Q09)', h: 48 },
+      { id:'chartSwitch', title:'Intención de cambio de proveedor (Q10)', h: 48 }
+    ];
+
+    for (const c of chartIds2) {
+      const canvas = document.getElementById(c.id);
+      if (!canvas) continue;
+      const imgData = canvas.toDataURL('image/png');
+      if (y + c.h + 10 > pageH - 15) { pdf.addPage(); pdf.setFillColor(13,17,23); pdf.rect(0,0,pageW,pageH,'F'); y = 16; }
+      pdf.setTextColor(240,246,252);
+      pdf.setFont('helvetica','bold');
+      pdf.setFontSize(10);
+      pdf.text(c.title, margin, y);
+      y += 4;
+      pdf.addImage(imgData, 'PNG', margin, y, pageW - margin*2, c.h);
+      y += c.h + 8;
+    }
+
+    // ── INSIGHTS / CONCLUSIONES ──
+    if (y + 60 > pageH - 12) { pdf.addPage(); pdf.setFillColor(13,17,23); pdf.rect(0,0,pageW,pageH,'F'); y = 16; }
+
+    pdf.setTextColor(255,255,255);
+    pdf.setFont('helvetica','bold');
+    pdf.setFontSize(14);
+    pdf.text('Insights automáticos', margin, y);
+    y += 8;
+
+    const insights = generateInsights();
+    pdf.setFont('helvetica','normal');
+    pdf.setFontSize(9);
+    pdf.setTextColor(240,246,252);
+    insights.forEach(ins => {
+      if (y > pageH - 20) { pdf.addPage(); pdf.setFillColor(13,17,23); pdf.rect(0,0,pageW,pageH,'F'); y = 16; }
+      const lines = pdf.splitTextToSize('• ' + ins, pageW - margin*2);
+      pdf.text(lines, margin, y);
+      y += lines.length * 5 + 3;
+    });
+
+    // Footer en cada página
+    const pageCount = pdf.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      pdf.setPage(i);
+      pdf.setTextColor(110, 118, 129);
+      pdf.setFontSize(7);
+      pdf.setFont('courier', 'normal');
+      pdf.text(`FraudEG · Confidencial · Página ${i} de ${pageCount}`, margin, pageH - 6);
+      pdf.text(reportDate, pageW - margin, pageH - 6, { align: 'right' });
+    }
+
+    const filename = `FraudEG_Reporte_${new Date().toISOString().slice(0,10)}.pdf`;
+    pdf.save(filename);
+    overlay.classList.remove('visible');
+    showToast('✓ Reporte descargado', 'success');
+  } catch (err) {
+    console.error(err);
+    overlay.classList.remove('visible');
+    showToast('Error al generar PDF: ' + err.message, 'error');
+  }
+}
+
+function generateInsights() {
+  const d = filteredData;
+  const total = d.length;
+  const pct = (n) => total > 0 ? Math.round(n/total*100) : 0;
+  const insights = [];
+
+  if (total === 0) return ['Sin datos suficientes para generar insights.'];
+
+  // EaaS
+  const eaasPos = d.filter(r => { const c = classifyEaaS(r.Q07D_EaaS_Custodia); return c === 'muy_interesado' || c === 'interesado'; }).length;
+  if (eaasPos > 0) {
+    insights.push(`${pct(eaasPos)}% del mercado (${eaasPos}/${total}) muestra apetito por el modelo de custodia preventiva end-to-end (EaaS), validando la hipótesis central del producto.`);
+  }
+
+  // Gap de riesgo
+  const riskOnUs = d.filter(r => (r.Q07C_Riesgo_Compartido || '').toLowerCase().includes('100% nuestro')).length;
+  if (riskOnUs > 0) {
+    insights.push(`${pct(riskOnUs)}% de los encuestados asume el 100% del riesgo financiero por fraude — su proveedor actual no comparte responsabilidad económica. Gap de mercado citable.`);
+  }
+
+  // Insatisfacción
+  const unsat = d.filter(r => (r.Q09_Satisfaccion || '').toLowerCase().includes('insatisfecho')).length;
+  const regular = d.filter(r => (r.Q09_Satisfaccion || '').toLowerCase().includes('regular')).length;
+  if (unsat + regular > 0) {
+    insights.push(`${pct(unsat + regular)}% del mercado reporta satisfacción "regular" o "insatisfecho" con su solución actual — oportunidad de desplazamiento de ${unsat + regular} cuentas.`);
+  }
+
+  // Switching
+  const switching = d.filter(r => { const v = (r.Q10_Cambio_Proveedor || '').toLowerCase(); return v.startsWith('sí') || v.startsWith('si'); }).length;
+  if (switching > 0) {
+    insights.push(`${pct(switching)}% está evaluando alternativas activamente — pipeline comercial inmediato de ${switching} prospectos calificados.`);
+  }
+
+  // Lead distribution
+  const byLead = { HOT:0, WARM:0 };
+  d.forEach(r => { const l = classifyLead(r); if (byLead[l] !== undefined) byLead[l]++; });
+  if (byLead.HOT + byLead.WARM > 0) {
+    insights.push(`Pipeline calificado: ${byLead.HOT} lead${byLead.HOT!==1?'s':''} hot + ${byLead.WARM} warm = ${byLead.HOT + byLead.WARM} oportunidades comerciales activas.`);
+  }
+
+  // Sector concentration
+  const bySector = {};
+  d.forEach(r => { bySector[r.Sector] = (bySector[r.Sector]||0) + 1; });
+  const topSector = Object.entries(bySector).sort((a,b)=>b[1]-a[1])[0];
+  if (topSector) {
+    insights.push(`Mayor concentración de respuestas en sector ${sectorLabel(topSector[0])} (${topSector[1]} de ${total}, ${Math.round(topSector[1]/total*100)}%).`);
+  }
+
+  // Quality
+  const fast = d.filter(r => { const s = Number(r.Duracion_Segundos) || 0; return s > 0 && s < 120; }).length;
+  if (fast > 0) {
+    insights.push(`⚠ ${fast} respuesta${fast!==1?'s':''} completada${fast!==1?'s':''} en menos de 2 minutos — revisar calidad antes de incluir en análisis final.`);
+  }
+
+  // Duración
+  const durations = d.map(r => Number(r.Duracion_Segundos) || 0).filter(x => x > 0).sort((a,b)=>a-b);
+  if (durations.length > 0) {
+    const med = durations[Math.floor(durations.length/2)];
+    insights.push(`Tiempo mediano de llenado: ${Math.floor(med/60)}:${String(med%60).padStart(2,'0')} minutos.`);
+  }
+
+  return insights;
+}
+
+// ════════════════════════════════════════════════════════════
+// TOAST
+// ════════════════════════════════════════════════════════════
+function showToast(msg, variant) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast' + (variant ? ' ' + variant : '');
+  t.classList.add('show');
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ════════════════════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════════════════════
+loadData();
+// Auto-refresh cada 5 minutos
+setInterval(loadData, 5 * 60 * 1000);
+</script>
+</body>
+</html>
