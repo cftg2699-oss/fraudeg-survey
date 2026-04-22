@@ -133,11 +133,12 @@ input::placeholder,textarea::placeholder{color:var(--text-muted)}
 
 <script>
 // ════════════════════════════════════════════════════════════
-// FraudEG Survey V1.3
-// Cambios vs V1.2.1:
-//  - Q07D NUEVA: validación dedicada de custodia preventiva (EaaS end-to-end)
-//  - Q_OTRO: flujo completo para sectores no contemplados (crypto, aviación, etc.)
-//  - Total: 15 preguntas para TODOS los flujos (consistente)
+// FraudEG Survey V1.3.1
+// Bugfixes sobre V1.3:
+//  - Restaura estado visual al presionar "Atrás" (evita respuestas huérfanas vacías)
+//  - Auto-advance valida estado actual al disparar el timer (race condition)
+//  - Red de seguridad: valida todas las obligatorias antes de enviar
+//  - Limpia flag _autoAdvanced al re-renderizar para permitir re-disparo
 // ════════════════════════════════════════════════════════════
 
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzveyUa-SCcVpq7wrgpeQ4NA3RXlt4AuZSARSWrUluue8wHSKAcP6M_3xtVTiZi5pStlA/exec';
@@ -658,6 +659,124 @@ function renderStep(idx) {
   html += '</div></div></div>';
   container.innerHTML = html;
   updateProgress();
+  restoreAnswerState(idx, q);
+}
+
+// ★ FIX V1.2.2: Restaura el estado visual de respuestas previas al re-renderizar
+// Sin esto, al presionar "Atrás" la pregunta parece vacía pero answers[q.id] existe,
+// causando inconsistencia y respuestas huérfanas en la Sheet.
+function restoreAnswerState(idx, q) {
+  const ans = answers[q.id];
+  if (!ans) return;
+
+  // Limpiar flag de auto-avance para que pueda volver a disparar si re-completa
+  delete ans._autoAdvanced;
+
+  if (q.type === 'single' || q.type === 'contact-intent') {
+    if (ans.index !== undefined) {
+      const btn = document.querySelector(`#opts-${idx} .opt-btn[data-idx="${ans.index}"]`);
+      if (btn) btn.classList.add('selected');
+
+      // Restaurar campo "Otro"
+      if (q.hasOtherField && ans.index === q.options.length - 1) {
+        const other = document.getElementById(`other-${idx}`);
+        if (other) {
+          other.classList.add('visible');
+          const input = document.getElementById(`otherInput-${idx}`);
+          if (input && ans.otherText) input.value = ans.otherText;
+        }
+      }
+
+      // Restaurar textarea condicional (Q10)
+      if (q.conditionalTextarea !== undefined && ans.index === q.conditionalTextarea) {
+        const ct = document.getElementById(`condText-${idx}`);
+        if (ct) {
+          ct.classList.add('visible');
+          const inp = document.getElementById(`condTextInput-${idx}`);
+          if (inp && ans.conditionalText) inp.value = ans.conditionalText;
+        }
+      }
+
+      // Restaurar campo presupuesto (Q11)
+      if (q.conditionalBudgetField !== undefined && ans.index === q.conditionalBudgetField) {
+        const bf = document.getElementById(`budgetField-${idx}`);
+        if (bf) {
+          bf.classList.add('visible');
+          const inp = document.getElementById(`budgetInput-${idx}`);
+          if (inp && ans.budgetValue) inp.value = ans.budgetValue;
+        }
+      }
+
+      // Mostrar botón Continuar si auto-advance estaba activo pero había pausa
+      if (q.autoAdvance) {
+        const hadPause = (q.hasOtherField && ans.index === q.options.length - 1) ||
+                        (q.conditionalTextarea !== undefined && ans.index === q.conditionalTextarea) ||
+                        (q.conditionalBudgetField !== undefined && ans.index === q.conditionalBudgetField);
+        if (hadPause) {
+          const nextBtn = document.getElementById(`nextBtn-${idx}`);
+          if (nextBtn) nextBtn.style.display = 'inline-block';
+        }
+      }
+
+      // Contact intent: restaurar formulario
+      if (q.type === 'contact-intent' && ans.contact) {
+        const form = document.getElementById(`contactForm-${idx}`);
+        const submitBtn = document.getElementById(`submitBtn-${idx}`);
+        const label = document.getElementById(`contactFormLabel-${idx}`);
+        const phoneGroup = document.getElementById(`phoneGroup-${idx}`);
+        if (submitBtn) submitBtn.style.display = 'inline-block';
+        if (ans.index === 0) {
+          form && form.classList.add('visible');
+          if (label) label.textContent = 'Para que te contactemos, necesitamos algunos datos';
+          if (phoneGroup) phoneGroup.style.display = 'block';
+          if (submitBtn) submitBtn.textContent = 'Enviar ✓';
+        } else if (ans.index === 1) {
+          form && form.classList.add('visible');
+          if (label) label.textContent = 'Para enviarte el resumen, necesitamos tu nombre y correo';
+          if (phoneGroup) phoneGroup.style.display = 'none';
+          if (submitBtn) submitBtn.textContent = 'Enviar ✓';
+        } else {
+          if (submitBtn) submitBtn.textContent = 'Finalizar ✓';
+        }
+        // Restaurar valores de campos de contacto
+        const c = ans.contact;
+        setTimeout(() => {
+          const cn = document.getElementById('c-name'); if (cn && c.name) cn.value = c.name;
+          const ce = document.getElementById('c-email'); if (ce && c.email) ce.value = c.email;
+          const cp = document.getElementById('c-phone'); if (cp && c.phone) cp.value = c.phone;
+          const cc = document.getElementById('c-company'); if (cc && c.company) cc.value = c.company;
+          const cy = document.getElementById('c-country'); if (cy && c.country) cy.value = c.country;
+        }, 50);
+      }
+    }
+  }
+  else if (q.type === 'multi') {
+    if (ans.indices && ans.indices.length > 0) {
+      ans.indices.forEach(i => {
+        const el = document.querySelector(`#opts-${idx} .opt-check[data-idx="${i}"]`);
+        if (el) el.classList.add('selected');
+      });
+      if (q.max < 99) {
+        const hint = document.getElementById(`maxHint-${idx}`);
+        if (hint) hint.textContent = `${ans.indices.length} / ${q.max} seleccionadas`;
+        document.getElementById(`opts-${idx}`).classList.toggle('max-reached', ans.indices.length >= q.max);
+      }
+      if (q.hasOtherField && ans.indices.includes(q.options.length - 1)) {
+        const other = document.getElementById(`other-${idx}`);
+        if (other) {
+          other.classList.add('visible');
+          const input = document.getElementById(`otherInput-${idx}`);
+          if (input && ans.otherText) input.value = ans.otherText;
+        }
+      }
+    }
+  }
+  else if (q.type === 'textarea') {
+    if (ans.value) {
+      const ta = document.getElementById(`textareaInput-${idx}`);
+      if (ta) ta.value = ans.value;
+    }
+  }
 }
 
 function selectSingle(stepIdx, optIdx) {
@@ -751,12 +870,28 @@ function toggleMulti(stepIdx, optIdx) {
     }
   }
 
-  // Auto-avance al llegar al máximo (si no está "Otro" seleccionado)
+  // ★ FIX V1.2.2: Auto-avance con verificación al momento del timer.
+  // Antes: si el usuario deseleccionaba durante los 900ms, avanzaba igual con menos de max opciones.
+  // Ahora: verifica el estado ACTUAL al disparar el timer.
   if (!wasSelected && q.max < 99 && ans.indices.length === q.max && !hasOtherSelected && !ans._autoAdvanced) {
     ans._autoAdvanced = true;
     showToast('✓ Avanzando…', 'success');
     setTimeout(() => {
-      if (currentStep === stepIdx) goNext();
+      // Re-validar en el momento del disparo, no al momento de programar el timer
+      if (currentStep !== stepIdx) return;
+      const currentAns = answers[q.id];
+      if (!currentAns || currentAns.indices.length !== q.max) {
+        // Usuario cambió selección durante el delay — cancelar auto-avance
+        delete currentAns._autoAdvanced;
+        return;
+      }
+      // Si Otro fue seleccionado durante el delay, también cancelar
+      const otherIdxCheck = q.hasOtherField ? q.options.length - 1 : -1;
+      if (otherIdxCheck >= 0 && currentAns.indices.includes(otherIdxCheck)) {
+        delete currentAns._autoAdvanced;
+        return;
+      }
+      goNext();
     }, 900);
   }
 }
@@ -812,7 +947,46 @@ function skipStep() {
   if (currentStep < currentFlow.length) renderStep(currentStep);
 }
 
+// ★ FIX V1.2.2: Valida que todas las preguntas obligatorias del flow
+// tengan una respuesta válida. Retorna el índice de la primera que falte,
+// o -1 si todas están completas. Se llama antes de enviar.
+function findFirstMissingRequired() {
+  for (let i = 0; i < currentFlow.length; i++) {
+    const q = currentFlow[i];
+    if (!q.required) continue;
+    if (q.type === 'contact-intent') continue; // se valida aparte en submitForm
+    const a = answers[q.id];
+    if (!a) return i;
+    if (q.type === 'single') {
+      if (a.index === undefined || a.index === null) return i;
+      // Si escogió "Otro" y el texto está vacío, tratar como faltante
+      if (q.hasOtherField && a.index === q.options.length - 1 && (!a.otherText || !a.otherText.trim())) return i;
+      // Condicional textarea obligatorio
+      if (q.conditionalTextarea !== undefined && a.index === q.conditionalTextarea) {
+        if (!a.conditionalText || !a.conditionalText.trim()) return i;
+      }
+    }
+    if (q.type === 'multi') {
+      if (!a.indices || a.indices.length === 0) return i;
+      // Si "Otro" seleccionado sin texto
+      if (q.hasOtherField && a.indices.includes(q.options.length - 1) && (!a.otherText || !a.otherText.trim())) return i;
+    }
+  }
+  return -1;
+}
+
 function submitForm() {
+  // ★ FIX V1.2.2: Red de seguridad — verificar que TODAS las obligatorias
+  // tengan respuesta válida antes de enviar. Si alguna falta, saltar allí.
+  const missing = findFirstMissingRequired();
+  if (missing !== -1) {
+    const q = currentFlow[missing];
+    showToast(`Falta completar ${q.id}. Te llevo a esa pregunta.`);
+    currentStep = missing;
+    setTimeout(() => renderStep(currentStep), 800);
+    return;
+  }
+
   const q12 = answers.Q12;
   if (!q12) { showToast('Selecciona una opción'); return; }
   const intent = q12.index;
